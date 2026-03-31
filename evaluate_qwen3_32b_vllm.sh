@@ -155,20 +155,20 @@ log "✓ Mamba module loaded"
 # Define environment name
 ENV_NAME="bfcl_vllm"
 
-# Check if conda environment exists
-log "Checking if conda environment exists: $ENV_NAME"
-if conda env list | grep -q "^$ENV_NAME[[:space:]]"; then
-    log "✓ Conda environment '$ENV_NAME' already exists"
+# Check if mamba environment exists
+log "Checking if mamba environment exists: $ENV_NAME"
+if mamba env list | grep -q "^$ENV_NAME[[:space:]]"; then
+    log "✓ Mamba environment '$ENV_NAME' already exists"
 else
-    log "Creating conda environment: $ENV_NAME"
-    conda create -n "$ENV_NAME" python=3.10 -y || error_exit "Failed to create conda environment"
-    log "✓ Conda environment created"
+    log "Creating mamba environment: $ENV_NAME"
+    mamba create -n "$ENV_NAME" python=3.10 -y || error_exit "Failed to create mamba environment"
+    log "✓ Mamba environment created"
 fi
 
 # Activate environment
-log "Activating conda environment: $ENV_NAME"
-conda activate "$ENV_NAME" || error_exit "Failed to activate conda environment"
-log "✓ Conda environment activated"
+log "Activating mamba environment: $ENV_NAME"
+source activate "$ENV_NAME" || error_exit "Failed to activate mamba environment"
+log "✓ Mamba environment activated"
 
 # Install BFCL dependencies with vLLM support
 log "Installing BFCL with vLLM support..."
@@ -179,7 +179,7 @@ log "✓ Dependencies installed"
 # Verify curl is available for health checks
 if ! command -v curl &> /dev/null; then
     log "WARNING: curl not found, installing..."
-    conda install -y curl -q
+    mamba install -y curl -q
 fi
 
 # Change to BFCL directory
@@ -202,8 +202,7 @@ log "  Tensor Parallel Size: $VLLM_TENSOR_PARALLEL_SIZE"
 log "  Max Model Length: $VLLM_MAX_MODEL_LEN"
 log "  Endpoint: $VLLM_ENDPOINT"
 
-python -m vllm.entrypoints.openai.api_server \
-    --model "$VLLM_MODEL" \
+vllm serve "$VLLM_MODEL" \
     --host "$VLLM_HOST" \
     --port "$VLLM_PORT" \
     --gpu-memory-utilization "$VLLM_GPU_MEMORY_UTILIZATION" \
