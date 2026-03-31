@@ -112,7 +112,7 @@ wait_for_server() {
     log "Waiting for vLLM server to be ready at ${endpoint}..."
     
     while [ $retry_count -lt $max_retries ]; do
-        if curl -s "${endpoint}/models" > /dev/null 2>&1; then
+        if curl -v "${endpoint}/models" 2>&1 | grep -q "HTTP"; then
             log "✓ vLLM server is ready!"
             return 0
         fi
@@ -133,10 +133,60 @@ create_mamba_environment() {
     log "✓ Mamba environment created"
 }
 
+load_cuda_module() {
+    log ""
+    log "Detecting CUDA version from nvidia-smi..."
+    
+    # Check if nvidia-smi is available
+    if ! command -v nvidia-smi &> /dev/null; then
+        log "WARNING: nvidia-smi not found, skipping CUDA module detection"
+        return 0
+    fi
+    
+    # Get CUDA version from nvidia-smi output
+    # SOL output format: "CUDA Version: 13.0"
+    log "Running nvidia-smi to detect CUDA version..."
+    nvidia-smi
+    local cuda_version=$(nvidia-smi | grep "CUDA Version:" | awk '{print $3}')
+    
+    if [[ -z "$cuda_version" ]]; then
+        log "WARNING: Could not parse CUDA version from nvidia-smi"
+        return 0
+    fi
+    
+    log "Detected CUDA version from nvidia-smi: $cuda_version"
+    
+    # Try to load CUDA module with full version first (e.g., cuda/13.0)
+    log "Loading CUDA module: cuda/${cuda_version}..."
+    if module load "cuda/${cuda_version}"; then
+        log "✓ CUDA module loaded: cuda/${cuda_version}"
+        export CUDA_VERSION="${cuda_version}"
+        return 0
+    fi
+    
+    # Fallback: try major.minor version (e.g., cuda/13.0 already tried, try cuda/13)
+    local cuda_major=$(echo "$cuda_version" | cut -d. -f1)
+    log "Loading CUDA module (fallback): cuda/${cuda_major}..."
+    if module load "cuda/${cuda_major}"; then
+        log "✓ CUDA module loaded: cuda/${cuda_major} (fallback from ${cuda_version})"
+        export CUDA_VERSION="${cuda_major}"
+        return 0
+    fi
+    
+    log "WARNING: Could not load CUDA module (tried cuda/${cuda_version} and cuda/${cuda_major})"
+    log "         CUDA libraries may not be available, vLLM may still work if using system paths"
+    return 0
+}
+
 setup_environment() {
     local env_name=$1
     
     log ""
+    log "Loading CUDA and mamba modules..."
+    
+    # Load CUDA module first (detects from nvidia-smi)
+    load_cuda_module
+    
     log "Loading mamba module..."
     module load mamba/latest || error_exit "Failed to load mamba module"
     log "✓ Mamba module loaded"
@@ -159,8 +209,8 @@ setup_environment() {
     fi
     
     # Install vllm using mamba (faster than pip)
-    log "Installing vllm..."
-    mamba install -n "$env_name" -y pytorch::pytorch pytorch::pytorch-cuda=12.1 "pytorch::pytorch-cuda/label/cu12_cudatoolkit_cudnn" > /dev/null 2>&1 || true
+    log "Installing PyTorch with CUDA support..."
+    mamba install -n "$env_name" -y pytorch::pytorch pytorch::pytorch-cuda=12.1 "pytorch::pytorch-cuda/label/cu12_cudatoolkit_cudnn" || true
     mamba run -n "$env_name" pip install vllm || error_exit "Failed to install vllm"
     log "✓ vllm installed"
     
@@ -173,8 +223,44 @@ setup_environment() {
     # Verify curl is available for health checks
     if ! command -v curl &> /dev/null; then
         log "WARNING: curl not found, installing..."
-        mamba install -y curl -q
+        mamba install -y curl
     fi
+}
+
+
+
+
+detect_cuda_home() {
+    local env_name=$1
+    
+    # First check if CUDA_HOME is already set (from module environment)
+    if [[ -n "$CUDA_HOME" && -d "$CUDA_HOME" ]]; then
+        log "✓ CUDA_HOME already set: $CUDA_HOME"
+        return 0
+    fi
+    
+    log "Detecting CUDA_HOME..."
+    
+    # Try to find CUDA_HOME from PyTorch installation in mamba environment
+    local torch_cuda_home=$(mamba run -n "$env_name" python -c "import torch; print(torch.utils.cpp_extension.CUDA_HOME or '')" 2>/dev/null | grep -o '^[^(]*' | tr -d ' ')
+    
+    if [[ -n "$torch_cuda_home" && -d "$torch_cuda_home" ]]; then
+        export CUDA_HOME="$torch_cuda_home"
+        log "✓ CUDA_HOME detected from PyTorch: $CUDA_HOME"
+        return 0
+    fi
+    
+    # Try common CUDA installation paths
+    for cuda_path in /usr/local/cuda-12.1 /usr/local/cuda-12 /usr/local/cuda /opt/cuda /opt/cuda-12.1 /opt/cuda-12; do
+        if [[ -d "$cuda_path" ]]; then
+            export CUDA_HOME="$cuda_path"
+            log "✓ CUDA_HOME found at: $CUDA_HOME"
+            return 0
+        fi
+    done
+    
+    log "WARNING: Could not automatically detect CUDA_HOME, vLLM may have issues finding CUDA libraries"
+    return 1
 }
 
 # Global variable to store environment name for use in other functions
@@ -206,6 +292,9 @@ ENV_NAME="bfcl_vllm"
 setup_environment "$ENV_NAME"
 MAMBA_ENV_NAME="$ENV_NAME"
 
+# Detect CUDA_HOME for vLLM
+detect_cuda_home "$MAMBA_ENV_NAME"
+
 # Change to BFCL directory
 cd "${BFCL_PROJECT_ROOT}" || error_exit "Failed to change to BFCL directory"
 log "Working directory: $(pwd)"
@@ -225,8 +314,9 @@ log "  GPU Memory Utilization: $VLLM_GPU_MEMORY_UTILIZATION"
 log "  Tensor Parallel Size: $VLLM_TENSOR_PARALLEL_SIZE"
 log "  Max Model Length: $VLLM_MAX_MODEL_LEN"
 log "  Endpoint: $VLLM_ENDPOINT"
+log "  CUDA_HOME: $CUDA_HOME"
 
-mamba run -n "$MAMBA_ENV_NAME" vllm serve "$VLLM_MODEL" \
+CUDA_HOME="${CUDA_HOME}" mamba run -n "$MAMBA_ENV_NAME" vllm serve "$VLLM_MODEL" \
     --host "$VLLM_HOST" \
     --port "$VLLM_PORT" \
     --gpu-memory-utilization "$VLLM_GPU_MEMORY_UTILIZATION" \
