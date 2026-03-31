@@ -170,11 +170,11 @@ log "Activating mamba environment: $ENV_NAME"
 source activate "$ENV_NAME" || error_exit "Failed to activate mamba environment"
 log "✓ Mamba environment activated"
 
-# Install BFCL dependencies with vLLM support
-log "Installing BFCL with vLLM support..."
+# Install BFCL
+log "Installing BFCL..."
 cd "${BFCL_PROJECT_ROOT}/berkeley-function-call-leaderboard" || error_exit "Failed to navigate to BFCL directory"
-pip install -e .[oss_eval_vllm] -q || error_exit "Failed to install BFCL with vLLM support"
-log "✓ Dependencies installed"
+pip install -e . -q || error_exit "Failed to install BFCL"
+log "✓ BFCL installed"
 
 # Verify curl is available for health checks
 if ! command -v curl &> /dev/null; then
