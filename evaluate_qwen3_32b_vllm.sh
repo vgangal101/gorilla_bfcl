@@ -125,6 +125,57 @@ wait_for_server() {
     error_exit "vLLM server did not become ready after $((max_retries * retry_delay)) seconds"
 }
 
+create_mamba_environment() {
+    local env_name=$1
+    
+    log "Creating mamba environment: $env_name"
+    mamba create -n "$env_name" python=3.10 -y || error_exit "Failed to create mamba environment"
+    log "✓ Mamba environment created"
+}
+
+setup_environment() {
+    local env_name=$1
+    
+    log ""
+    log "Loading mamba module..."
+    module load mamba/latest || error_exit "Failed to load mamba module"
+    log "✓ Mamba module loaded"
+    
+    # Check if environment exists
+    log "Checking if mamba environment exists: $env_name"
+    if mamba env list | grep -q "^$env_name[[:space:]]"; then
+        log "✓ Mamba environment '$env_name' already exists"
+        
+        # Check if vllm is installed in existing environment
+        log "Checking if vllm is installed in existing environment..."
+        if source activate "$env_name" > /dev/null 2>&1 && pip show vllm > /dev/null 2>&1; then
+            log "✓ vllm is already installed, skipping setup"
+            return 0
+        else
+            log "vllm not found in existing environment, will reinstall"
+        fi
+    else
+        create_mamba_environment "$env_name"
+    fi
+    
+    # Activate environment
+    log "Activating mamba environment: $env_name"
+    source activate "$env_name" || error_exit "Failed to activate mamba environment"
+    log "✓ Mamba environment activated"
+    
+    # Install BFCL
+    log "Installing BFCL..."
+    cd "${BFCL_PROJECT_ROOT}/berkeley-function-call-leaderboard" || error_exit "Failed to navigate to BFCL directory"
+    pip install -e . || error_exit "Failed to install BFCL"
+    log "✓ BFCL installed"
+    
+    # Verify curl is available for health checks
+    if ! command -v curl &> /dev/null; then
+        log "WARNING: curl not found, installing..."
+        mamba install -y curl -q
+    fi
+}
+
 # ============================================================================
 # Main Script
 # ============================================================================
@@ -147,40 +198,8 @@ trap cleanup EXIT INT TERM
 # Environment Setup
 # ============================================================================
 
-log ""
-log "Loading mamba module..."
-module load mamba/latest || error_exit "Failed to load mamba module"
-log "✓ Mamba module loaded"
-
-# Define environment name
 ENV_NAME="bfcl_vllm"
-
-# Check if mamba environment exists
-log "Checking if mamba environment exists: $ENV_NAME"
-if mamba env list | grep -q "^$ENV_NAME[[:space:]]"; then
-    log "✓ Mamba environment '$ENV_NAME' already exists"
-else
-    log "Creating mamba environment: $ENV_NAME"
-    mamba create -n "$ENV_NAME" python=3.10 -y || error_exit "Failed to create mamba environment"
-    log "✓ Mamba environment created"
-fi
-
-# Activate environment
-log "Activating mamba environment: $ENV_NAME"
-source activate "$ENV_NAME" || error_exit "Failed to activate mamba environment"
-log "✓ Mamba environment activated"
-
-# Install BFCL
-log "Installing BFCL..."
-cd "${BFCL_PROJECT_ROOT}/berkeley-function-call-leaderboard" || error_exit "Failed to navigate to BFCL directory"
-pip install -e . -q || error_exit "Failed to install BFCL"
-log "✓ BFCL installed"
-
-# Verify curl is available for health checks
-if ! command -v curl &> /dev/null; then
-    log "WARNING: curl not found, installing..."
-    mamba install -y curl -q
-fi
+setup_environment "$ENV_NAME"
 
 # Change to BFCL directory
 cd "${BFCL_PROJECT_ROOT}" || error_exit "Failed to change to BFCL directory"
