@@ -135,47 +135,18 @@ create_mamba_environment() {
 
 load_cuda_module() {
     log ""
-    log "Detecting CUDA version from nvidia-smi..."
+    log "Loading CUDA module: cuda-13.0.1-gcc-13.2.0..."
     
-    # Check if nvidia-smi is available
-    if ! command -v nvidia-smi &> /dev/null; then
-        log "WARNING: nvidia-smi not found, skipping CUDA module detection"
+    # Load the specific CUDA module on SOL
+    if module load cuda-13.0.1-gcc-13.2.0; then
+        log "✓ CUDA module loaded: cuda-13.0.1-gcc-13.2.0"
+        export CUDA_VERSION="13.0.1"
+        return 0
+    else
+        log "WARNING: Failed to load CUDA module cuda-13.0.1-gcc-13.2.0"
+        log "         Attempting to continue without explicit CUDA module"
         return 0
     fi
-    
-    # Get CUDA version from nvidia-smi output
-    # SOL output format: "CUDA Version: 13.0"
-    log "Running nvidia-smi to detect CUDA version..."
-    nvidia-smi
-    local cuda_version=$(nvidia-smi | grep "CUDA Version:" | awk '{print $3}')
-    
-    if [[ -z "$cuda_version" ]]; then
-        log "WARNING: Could not parse CUDA version from nvidia-smi"
-        return 0
-    fi
-    
-    log "Detected CUDA version from nvidia-smi: $cuda_version"
-    
-    # Try to load CUDA module with full version first (e.g., cuda/13.0)
-    log "Loading CUDA module: cuda/${cuda_version}..."
-    if module load "cuda/${cuda_version}"; then
-        log "✓ CUDA module loaded: cuda/${cuda_version}"
-        export CUDA_VERSION="${cuda_version}"
-        return 0
-    fi
-    
-    # Fallback: try major.minor version (e.g., cuda/13.0 already tried, try cuda/13)
-    local cuda_major=$(echo "$cuda_version" | cut -d. -f1)
-    log "Loading CUDA module (fallback): cuda/${cuda_major}..."
-    if module load "cuda/${cuda_major}"; then
-        log "✓ CUDA module loaded: cuda/${cuda_major} (fallback from ${cuda_version})"
-        export CUDA_VERSION="${cuda_major}"
-        return 0
-    fi
-    
-    log "WARNING: Could not load CUDA module (tried cuda/${cuda_version} and cuda/${cuda_major})"
-    log "         CUDA libraries may not be available, vLLM may still work if using system paths"
-    return 0
 }
 
 setup_environment() {
