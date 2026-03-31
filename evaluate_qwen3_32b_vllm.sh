@@ -141,32 +141,33 @@ setup_environment() {
     module load mamba/latest || error_exit "Failed to load mamba module"
     log "✓ Mamba module loaded"
     
-    # Check if environment exists
+    # Check if environment exists and has vllm + BFCL already installed
     log "Checking if mamba environment exists: $env_name"
     if mamba env list | grep -q "^$env_name[[:space:]]"; then
         log "✓ Mamba environment '$env_name' already exists"
         
-        # Check if vllm is installed in existing environment
-        log "Checking if vllm is installed in existing environment..."
-        if source activate "$env_name" > /dev/null 2>&1 && pip show vllm > /dev/null 2>&1; then
-            log "✓ vllm is already installed, skipping setup"
+        # Check if both vllm and BFCL are installed
+        log "Checking if vllm and BFCL are installed..."
+        if mamba run -n "$env_name" bash -c "pip show vllm > /dev/null 2>&1 && pip show bfcl-eval > /dev/null 2>&1"; then
+            log "✓ vllm and BFCL are already installed, skipping setup"
             return 0
         else
-            log "vllm not found in existing environment, will reinstall"
+            log "Dependencies not complete, will reinstall"
         fi
     else
         create_mamba_environment "$env_name"
     fi
     
-    # Activate environment
-    log "Activating mamba environment: $env_name"
-    source activate "$env_name" || error_exit "Failed to activate mamba environment"
-    log "✓ Mamba environment activated"
+    # Install vllm using mamba (faster than pip)
+    log "Installing vllm..."
+    mamba install -n "$env_name" -y pytorch::pytorch pytorch::pytorch-cuda=12.1 "pytorch::pytorch-cuda/label/cu12_cudatoolkit_cudnn" > /dev/null 2>&1 || true
+    mamba run -n "$env_name" pip install vllm || error_exit "Failed to install vllm"
+    log "✓ vllm installed"
     
     # Install BFCL
     log "Installing BFCL..."
     cd "${BFCL_PROJECT_ROOT}/berkeley-function-call-leaderboard" || error_exit "Failed to navigate to BFCL directory"
-    pip install -e . || error_exit "Failed to install BFCL"
+    mamba run -n "$env_name" pip install -e . || error_exit "Failed to install BFCL"
     log "✓ BFCL installed"
     
     # Verify curl is available for health checks
@@ -175,6 +176,9 @@ setup_environment() {
         mamba install -y curl -q
     fi
 }
+
+# Global variable to store environment name for use in other functions
+MAMBA_ENV_NAME=""
 
 # ============================================================================
 # Main Script
@@ -200,6 +204,7 @@ trap cleanup EXIT INT TERM
 
 ENV_NAME="bfcl_vllm"
 setup_environment "$ENV_NAME"
+MAMBA_ENV_NAME="$ENV_NAME"
 
 # Change to BFCL directory
 cd "${BFCL_PROJECT_ROOT}" || error_exit "Failed to change to BFCL directory"
@@ -221,7 +226,7 @@ log "  Tensor Parallel Size: $VLLM_TENSOR_PARALLEL_SIZE"
 log "  Max Model Length: $VLLM_MAX_MODEL_LEN"
 log "  Endpoint: $VLLM_ENDPOINT"
 
-vllm serve "$VLLM_MODEL" \
+mamba run -n "$MAMBA_ENV_NAME" vllm serve "$VLLM_MODEL" \
     --host "$VLLM_HOST" \
     --port "$VLLM_PORT" \
     --gpu-memory-utilization "$VLLM_GPU_MEMORY_UTILIZATION" \
@@ -248,7 +253,7 @@ log "========================================================================"
 
 log "Command: bfcl generate --model $MODEL_NAME --test-category $TEST_CATEGORY --num-threads $NUM_THREADS --openai-api-base $VLLM_ENDPOINT"
 
-if bfcl generate \
+if mamba run -n "$MAMBA_ENV_NAME" bfcl generate \
     --model "$MODEL_NAME" \
     --test-category "$TEST_CATEGORY" \
     --num-threads "$NUM_THREADS" \
@@ -270,7 +275,7 @@ log "========================================================================"
 
 log "Command: bfcl evaluate --model $MODEL_NAME --test-category $TEST_CATEGORY"
 
-if bfcl evaluate \
+if mamba run -n "$MAMBA_ENV_NAME" bfcl evaluate \
     --model "$MODEL_NAME" \
     --test-category "$TEST_CATEGORY" \
     2>&1 | tee -a "${LOG_FILE}"; then
