@@ -12,9 +12,11 @@ git clone https://github.com/HectorHernandez1/gorilla_bfcl.git
 cd gorilla_bfcl
 git checkout bfcl_gaudi
 
-# 3. Configure (defaults work for the class account)
-cp sol_gaudi/config.env.example sol_gaudi/config.env
-# edit only if your account/QoS/SIF path differs
+# 3. (Optional) Override defaults for your account/QoS/SIF path/email
+#    Skip this if you're on the class account with default settings —
+#    scripts fall back to config.env.example automatically.
+# cp sol_gaudi/config.env.example sol_gaudi/config.env
+# $EDITOR sol_gaudi/config.env
 
 # 4. Bring-up + smoke test (qwen3_4b on simple_python)
 ./sol_gaudi/quickstart.sh
