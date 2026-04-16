@@ -3,7 +3,8 @@
 Quick reference. For full operational detail see `README.md`; for hardware reference see `GAUDI_EVAL_GUIDE.md`.
 
 ```bash
-# 1. SSH to SOL
+# 1. SSH to SOL (requires ASU campus network or Sol VPN; first login prompts
+#    for host-key acceptance — type "yes")
 ssh <asurite>@login.sol.rc.asu.edu
 
 # 2. Clone + switch to the Gaudi branch (on /scratch, not $HOME)
