@@ -49,6 +49,12 @@ slurm_file_for() {
 ensure_slurm_files() {
     if ! ls "${SLURM_DIR}"/bfcl_*_gaudi.slurm >/dev/null 2>&1; then
         echo -e "${YELLOW}No .slurm files found — running generator${NC}"
+        # Login default python3 may be <3.9; activate env for the generator.
+        if command -v module >/dev/null 2>&1; then
+            module load "${MAMBA_MODULE}" 2>/dev/null || true
+        fi
+        # shellcheck disable=SC1091
+        source activate "${BFCL_GAUDI_ENV}" 2>/dev/null || true
         python3 "${SCRIPT_DIR}/generate_bfcl_scripts.py"
     fi
 }

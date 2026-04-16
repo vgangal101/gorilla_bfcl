@@ -34,6 +34,13 @@ bash "${SCRIPT_DIR}/setup_gaudi_env.sh"
 
 # --- 3. Generate SBATCH scripts ---
 step "3/4 Generate SBATCH scripts"
+# SOL login default python3 is Python 3.6 (too old for the generator's
+# type hints). Activate the env we just built so python3 is 3.11.
+if command -v module >/dev/null 2>&1; then
+    module load "${MAMBA_MODULE}" 2>/dev/null || true
+fi
+# shellcheck disable=SC1091
+source activate "${BFCL_GAUDI_ENV}"
 python3 "${SCRIPT_DIR}/generate_bfcl_scripts.py"
 
 # --- 4. Submit smoke test ---
