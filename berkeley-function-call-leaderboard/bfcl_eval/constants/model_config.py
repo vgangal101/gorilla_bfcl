@@ -1273,6 +1273,18 @@ local_inference_model_map = {
         is_fc_model=False,
         underscore_to_dot=False,
     ),
+    "google/gemma-4-31B-it": ModelConfig(
+        model_name="google/gemma-4-31B-it",
+        display_name="Gemma-4-31B-it (Prompt)",
+        url="https://deepmind.google/models/gemma/gemma-4/",
+        org="Google",
+        license="gemma-terms-of-use",
+        model_handler=GemmaHandler,
+        input_price=None,
+        output_price=None,
+        is_fc_model=False,
+        underscore_to_dot=False,
+    ),
     "google/functiongemma-270m-it-FC": ModelConfig(
         model_name="google/functiongemma-270m-it",
         display_name="FunctionGemma-270m-it (FC)",

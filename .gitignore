@@ -44,3 +44,9 @@ berkeley-function-call-leaderboard/**/*.lock
 
 # Ignore the wandb cache:
 **/wandb/
+
+################## sol_gaudi (ASU SOL Gaudi pipeline) ##########################
+sol_gaudi/slurm/*.slurm
+sol_gaudi/logs/
+sol_gaudi/containers/
+sol_gaudi/config.env
