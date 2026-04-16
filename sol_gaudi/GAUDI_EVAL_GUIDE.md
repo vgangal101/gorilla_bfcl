@@ -14,7 +14,7 @@ Companion to `README.md`. The README covers **how to run** the BFCL sweep; this 
 
 These are what `config.env.example` ships with — don't rederive them from older NVIDIA scripts or the workshop slide deck:
 
-| Field |/Users/hectorhernandez/Desktop/repo/gorilla_bfcl/sol_gaudi/GAUDI_EVAL_GUIDE.md Value |
+| Field | Value |
 |---|---|
 | `SLURM_ACCOUNT` | `class_cse59827694spring2026` |
 | `SLURM_QOS` | `class_gaudi` (the deck shows `public` — that's the general-access QoS, not ours) |
