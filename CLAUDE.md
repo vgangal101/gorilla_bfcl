@@ -16,6 +16,7 @@ Top-level sub-projects:
 
 Root-level helper scripts (custom to this clone, not upstream) drive BFCL runs on SLURM:
 - `run_vllm_qwen32b_SOL.sh` — SBATCH script that runs `bfcl generate` + `bfcl evaluate` for Qwen3-32B on 2×A100s with the vllm backend. Note the hard-coded `cd /Users/vgangal/...` path from a prior machine — update it before submitting.
+- `sol_gaudi/` — **Intel Gaudi2 sweep on SOL** (its own README, `quickstart.sh`, per-model SLURM generator, Apptainer SIF builder, lifecycle wrapper). Covers Qwen3-{4B,8B,14B,32B} + Gemma-4-31B. See `sol_gaudi/README.md` to run, `sol_gaudi/GAUDI_EVAL_GUIDE.md` for hardware/Voyager-API reference.
 - `manage_qwen_eval.sh` — submit / status / logs / cancel / results / clean wrapper around the SLURM job (looks for `evaluate_qwen3_32b_vllm.slurm`).
 - `setup_qwen_eval.sh`, `setup_api_key.sh` — one-time env setup.
 - `analyze_qwen_results.py` — post-hoc score parsing.
@@ -79,3 +80,18 @@ Test categories are declared in `bfcl_eval/constants/` and in `TEST_CATEGORIES.m
 - The Qwen/SLURM scripts contain absolute paths from the original author's machine (`/Users/vgangal/...`). Fix paths before running on SOL.
 - `transformers==4.51.3`, `numpy==1.26.4`, `tree_sitter==0.21.3` are pinned in `pyproject.toml`; don't bump casually — past commits (`778c148`, `4d989a9`) specifically adjusted these to get the vLLM Qwen runner working.
 - `TORCHDYNAMO_DISABLE=1` is set in the SLURM script and is required for the current vLLM/Qwen combination; see `VLLM_FIXES_SUMMARY.md` for context.
+
+## Gaudi2 path (ASU SOL)
+
+All Gaudi work lives under `sol_gaudi/` and has its own docs. Do **not** replicate the NVIDIA root-level pattern for Gaudi — the infrastructure there is different in every dimension (Apptainer SIF instead of mamba+pip, `class_gaudi` QoS on `class_cse59827694spring2026` account, per-model SLURM scripts generated from a Python template, `hl-smi` not `nvidia-smi`, `--gres=gpu:hl225:N` not `--gres=gpu:N`).
+
+Entry points, in priority order:
+- `sol_gaudi/README.md` — the operational guide: `quickstart.sh`, `manage_bfcl_gaudi.sh {submit|status|logs|results|cancel}`, sweep targets (Qwen3-{4B,8B,14B,32B}, Gemma-4-31B).
+- `sol_gaudi/config.env.example` — single source of truth for account, QoS, partition, gres prefix, Habana runtime envs (`PT_HPU_LAZY_MODE=0`, `VLLM_SKIP_WARMUP=True`, `VLLM_DELAYED_SAMPLING=True`, `TORCHDYNAMO_DISABLE=1`), SIF path, HF cache. Every `.sh` / generated `.slurm` in the folder sources this.
+- `sol_gaudi/generate_bfcl_scripts.py` — per-model SBATCH generator (holds the (hpus, tp, cpus, mem, time) table for each model). Change allocations here, not in hand-edited `.slurm` files.
+- `sol_gaudi/GAUDI_EVAL_GUIDE.md` — reference-only: SOL hardware facts, `/data/sse/gaudi` assets, PyTorch-on-HPU code snippets, and the **Voyager managed-API shortcut** (`https://openai.rc.asu.edu/v1`, keys at https://voyager.rc.asu.edu/) — use it for any MoE Qwen3 variant (`qwen3-30b-a3b-*`, `qwen3-235b-a22b-*`) instead of running your own SLURM sweep.
+
+Key operational constraints:
+- Upstream `vllm==0.8.5` pinned in BFCL's `pyproject.toml` is CUDA-only; the Gaudi runtime comes from Habana's vLLM fork delivered via Apptainer SIF (`vllm_gaudi.sif`, built from `vault.habana.ai/gaudi-docker/1.23.0/...` by `build_vllm_gaudi_sif.sh`). Don't `pip install vllm` on the `gaudi` partition.
+- BFCL code is **unchanged** for Qwen3 on Gaudi — the SLURM script launches the Apptainer vLLM server and uses `bfcl generate --skip-server-setup` with `REMOTE_OPENAI_BASE_URL`. Gemma-4-31B is the only model that requires BFCL source edits (`supported_models.py` + `model_config.py`).
+- The workshop deck only explicitly listed DeepSeek-R1, Llama 3.x, Qwen 2.5, and Qwen2.5-VL-7B as HPU-vLLM-supported; Qwen3-* and Gemma 4 are not on that list. Always run `manage_bfcl_gaudi.sh submit qwen3_4b` as a smoke test before queuing the full sweep.
