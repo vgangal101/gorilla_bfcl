@@ -49,6 +49,6 @@ The existing sweep runs BFCL **unmodified** (just `--skip-server-setup` against 
 
 The ASU Gaudi2 workshop deck ("Introducing the Gaudi2 and Demystifying AI Processors", Jeevesh Choudhury) explicitly names these as vLLM-on-Gaudi supported: **DeepSeek-R1, Llama 3.x, Qwen 2.5, Qwen/Qwen2.5-VL-7B-Instruct**.
 
-- **Qwen3-32B is not in that list.** Qwen3 shares the Qwen2 architecture family so HabanaAI's vLLM fork generally handles it, but treat the smoke test (`manage_bfcl_gaudi.sh submit qwen3_4b`) as gating before submitting the full sweep — if Qwen3-4B works, 8B/32B will almost certainly follow.
+- **Qwen3-32B is not in that list.** Qwen3 shares the Qwen2 architecture family so HabanaAI's vLLM fork generally handles it, but treat the smoke test (`manage_bfcl_gaudi.sh submit qwen3_4b`) as gating before submitting the full sweep — if Qwen3-4B works, 8B/14B/32B will almost certainly follow.
 - **Gemma 4** (`google/gemma-4-31B-it`) requires the BFCL patch noted in `README.md:92` (`supported_models.py` + `model_config.py` entries). The Habana vLLM fork's handling of Gemma 4 is also unverified by the deck.
 
