@@ -33,6 +33,6 @@ cp sol_gaudi/config.env.example sol_gaudi/config.env
 # or inspect berkeley-function-call-leaderboard/score/data_overall.csv
 ```
 
-Model keys: `qwen3_4b`, `qwen3_8b`, `qwen3_14b`, `qwen3_32b`, `gemma4_31b`.
+Model keys: `qwen3_4b`, `qwen3_8b`, `qwen3_32b`, `gemma4_31b`.
 
 Always run the `qwen3_4b` smoke test before `submit-all` — the ASU workshop deck only validated Qwen 2.5 on HPU-vLLM, so Qwen3 support is inferred from architecture, not confirmed.

@@ -2,7 +2,7 @@
 
 Run Berkeley Function-Calling Leaderboard evaluations on SOL's Gaudi partition via the Habana vLLM fork (delivered as an Apptainer container).
 
-Target models (full sweep): `Qwen/Qwen3-4B`, `Qwen/Qwen3-8B`, `Qwen/Qwen3-14B`, `Qwen/Qwen3-32B`, `google/gemma-4-31B-it`.
+Target models (full sweep): `Qwen/Qwen3-4B`, `Qwen/Qwen3-8B`, `Qwen/Qwen3-32B`, `google/gemma-4-31B-it`.
 
 ---
 
@@ -65,7 +65,7 @@ Override the test category for a given submission:
 BFCL_TEST_CATEGORY=all_scoring ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_8b
 ```
 
-Available model keys: `qwen3_4b`, `qwen3_8b`, `qwen3_14b`, `qwen3_32b`, `gemma4_31b`.
+Available model keys: `qwen3_4b`, `qwen3_8b`, `qwen3_32b`, `gemma4_31b`.
 
 ## 5. Reading results
 
