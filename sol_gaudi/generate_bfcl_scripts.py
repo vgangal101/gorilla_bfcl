@@ -71,7 +71,9 @@ PY
 echo "vLLM server will bind to 127.0.0.1:${{PORT}}"
 
 # --- Launch vLLM OpenAI-compatible server inside Apptainer ---
-apptainer run --bind "/scratch/${{USER}}:/scratch/${{USER}}" "${{VLLM_GAUDI_SIF}}" \
+# Use `exec` not `run`: the ASU shared SIF ships a custom %runscript that
+# ignores our python -m invocation. `exec` bypasses the runscript.
+apptainer exec --bind "/scratch/${{USER}}:/scratch/${{USER}}" "${{VLLM_GAUDI_SIF}}" \
     python -m vllm.entrypoints.openai.api_server \
     --model "{hf_id}" \
     --tensor-parallel-size {tp} \
