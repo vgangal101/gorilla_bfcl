@@ -38,10 +38,19 @@ ok "BFCL installed (editable)"
 
 say "Resolving vLLM Gaudi Apptainer SIF"
 mkdir -p "${CONTAINERS_DIR}"
+
+# ASU SOL ships a pre-built SIF at /data/sse/gaudi/containers. Prefer it over
+# pulling ~20 GB from the Habana vault (whose tags drift anyway).
+ASU_SHARED_SIF="/data/sse/gaudi/containers/vllm-gaudi.sif"
+if [[ ! -f "${VLLM_GAUDI_SIF}" && -f "${ASU_SHARED_SIF}" ]]; then
+    say "Found ASU shared SIF at ${ASU_SHARED_SIF} — symlinking"
+    ln -sf "${ASU_SHARED_SIF}" "${VLLM_GAUDI_SIF}"
+fi
+
 if [[ -f "${VLLM_GAUDI_SIF}" ]]; then
-    ok "SIF already present at ${VLLM_GAUDI_SIF}"
+    ok "SIF available at ${VLLM_GAUDI_SIF}"
 else
-    warn "SIF missing at ${VLLM_GAUDI_SIF}"
+    warn "SIF missing at ${VLLM_GAUDI_SIF} and no ASU shared SIF at ${ASU_SHARED_SIF}"
     read -r -p "Build it now via build_vllm_gaudi_sif.sh? This pulls ~20 GB. [y/N] " ans
     if [[ "${ans}" =~ ^[Yy]$ ]]; then
         bash "${SCRIPT_DIR}/build_vllm_gaudi_sif.sh"
