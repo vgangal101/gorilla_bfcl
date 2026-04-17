@@ -46,7 +46,7 @@ berkeley-function-call-leaderboard/**/*.lock
 **/wandb/
 
 ################## sol_gaudi (ASU SOL Gaudi pipeline) ##########################
-sol_gaudi/slurm/*.slurm
+# sol_gaudi/slurm/*.slurm  # tracked; regenerate via python3 sol_gaudi/generate_bfcl_scripts.py
 sol_gaudi/logs/
 sol_gaudi/containers/
 sol_gaudi/config.env

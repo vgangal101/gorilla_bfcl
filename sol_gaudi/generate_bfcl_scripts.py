@@ -37,14 +37,14 @@ TEMPLATE = r"""#!/bin/bash
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --mem={mem}
 #SBATCH --time={time}
-#SBATCH --output={logs_dir}/bfcl_{model_key}_%j.out
-#SBATCH --error={logs_dir}/bfcl_{model_key}_%j.err
+#SBATCH --output=sol_gaudi/logs/bfcl_{model_key}_%j.out
+#SBATCH --error=sol_gaudi/logs/bfcl_{model_key}_%j.err
 {mail_line}
 set -euo pipefail
 
-# --- Load config ---
-SCRIPT_DIR="{sol_gaudi_root}"
-source "${{SCRIPT_DIR}}/config.env"
+# --- Load config (paths derive from SLURM_SUBMIT_DIR so the file is portable) ---
+SCRIPT_DIR="${{SLURM_SUBMIT_DIR}}/sol_gaudi"
+source "${{SCRIPT_DIR}}/config.env" 2>/dev/null || source "${{SCRIPT_DIR}}/config.env.example"
 
 # --- Load mamba / activate env ---
 module load "${{MAMBA_MODULE}}"
@@ -159,7 +159,6 @@ def main() -> int:
     gres_prefix = defaults.get("SLURM_GRES_PREFIX", "gpu:hl225")
     mail_user = defaults.get("SLURM_MAIL_USER", "").strip()
     mail_line = f"#SBATCH --mail-type=END\n#SBATCH --mail-user={mail_user}" if mail_user else ""
-    logs_dir = defaults.get("LOGS_DIR", str(SCRIPT_DIR / "logs"))
 
     SLURM_DIR.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
@@ -178,8 +177,6 @@ def main() -> int:
             account=account,
             gres_prefix=gres_prefix,
             mail_line=mail_line,
-            logs_dir=logs_dir,
-            sol_gaudi_root=str(SCRIPT_DIR),
         )
         out = SLURM_DIR / f"bfcl_{model_key}_gaudi.slurm"
         out.write_text(content)

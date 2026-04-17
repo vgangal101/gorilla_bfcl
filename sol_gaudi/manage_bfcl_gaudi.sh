@@ -74,6 +74,7 @@ submit_one() {
     job_id=$(BFCL_TEST_CATEGORY="${BFCL_TEST_CATEGORY}" \
              BFCL_NUM_THREADS="${BFCL_NUM_THREADS}" \
              sbatch --parsable \
+                    --chdir "${REPO_ROOT}" \
                     --export=ALL,BFCL_TEST_CATEGORY,BFCL_NUM_THREADS \
                     "${slurm}")
     echo -e "${GREEN}Submitted:${NC} ${model} -> job ${job_id}"
