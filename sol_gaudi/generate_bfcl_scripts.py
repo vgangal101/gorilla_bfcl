@@ -50,37 +50,56 @@ source "${{SCRIPT_DIR}}/config.env"
 module load "${{MAMBA_MODULE}}"
 source activate "${{BFCL_GAUDI_ENV}}"
 
-# --- Habana / vLLM runtime ---
-export HABANA_VISIBLE_DEVICES=all
-export HF_HOME="${{HF_HOME}}"
-export APPTAINERENV_PT_HPU_LAZY_MODE="${{APPTAINERENV_PT_HPU_LAZY_MODE}}"
-export APPTAINERENV_VLLM_SKIP_WARMUP="${{APPTAINERENV_VLLM_SKIP_WARMUP}}"
-export APPTAINERENV_VLLM_DELAYED_SAMPLING="${{APPTAINERENV_VLLM_DELAYED_SAMPLING}}"
-export APPTAINERENV_TORCHDYNAMO_DISABLE="${{APPTAINERENV_TORCHDYNAMO_DISABLE}}"
-export APPTAINERENV_HF_HOME="${{HF_HOME}}"
+# --- Habana / vLLM config (passed into the container via APPTAINERENV_*) ---
+# Values mirror /data/sse/gaudi/guides/vllm-gaudi-apptainer-guide.md
+export APPTAINERENV_MODEL="{hf_id}"
+export APPTAINERENV_TENSOR_PARALLEL_SIZE={tp}
+export APPTAINERENV_HF_HOME=/mnt/hf_cache
+export APPTAINERENV_HABANA_VISIBLE_DEVICES=all
+export APPTAINERENV_HPU_MEM_GAUDI2=96
+export APPTAINERENV_PT_HPU_LAZY_MODE=0
+export APPTAINERENV_PT_HPU_ENABLE_LAZY_COLLECTIVES=0
+export APPTAINERENV_MAX_MODEL_LEN="${{VLLM_MAX_MODEL_LEN}}"
+export APPTAINERENV_GPU_MEMORY_UTILIZATION="${{VLLM_GPU_MEMORY_UTILIZATION}}"
+export APPTAINERENV_VLLM_SKIP_WARMUP=True
+export APPTAINERENV_VLLM_GRAPH_RESERVED_MEM=0.10
+export APPTAINERENV_MAX_NUM_SEQS=16
+export APPTAINERENV_MAX_NUM_PREFILL_SEQS=8
+export APPTAINERENV_VLLM_DECODE_BS_BUCKET_MAX=32
+export APPTAINERENV_VLLM_DECODE_BLOCK_BUCKET_MAX=2048
+export APPTAINERENV_VLLM_TOKENIZER_MODE=auto
+export APPTAINERENV_PYTHONUNBUFFERED=1
 
-# --- Pick a free TCP port for the vLLM server ---
-PORT=$(python - <<'PY'
-import socket
-s = socket.socket()
-s.bind(("", 0))
-print(s.getsockname()[1])
-s.close()
-PY
-)
+# --- Dirs we bind into the container ---
+HF_CACHE_HOST="${{HF_HOME}}"
+mkdir -p "${{HF_CACHE_HOST}}"
+
+HABANA_LOGS="${{LOGS_DIR}}/habana_${{SLURM_JOB_ID}}"
+mkdir -p "${{HABANA_LOGS}}"
+
+# ASU's vllm-fork .cd/ holds the launcher config that
+# `python3 -m entrypoints.entrypoint_main server` reads.
+VLLM_CD_DIR="/data/sse/gaudi/vllm-fork/.cd"
+
+# ASU's entrypoint defaults to port 8000 — --exclusive ensures no conflict.
+PORT=8000
 echo "vLLM server will bind to 127.0.0.1:${{PORT}}"
 
-# --- Launch vLLM OpenAI-compatible server inside Apptainer ---
-# Use `exec` not `run`: the ASU shared SIF ships a custom %runscript that
-# ignores our python -m invocation. `exec` bypasses the runscript.
-apptainer exec --bind "/scratch/${{USER}}:/scratch/${{USER}}" "${{VLLM_GAUDI_SIF}}" \
-    python -m vllm.entrypoints.openai.api_server \
-    --model "{hf_id}" \
-    --tensor-parallel-size {tp} \
-    --gpu-memory-utilization "${{VLLM_GPU_MEMORY_UTILIZATION}}" \
-    --max-model-len "${{VLLM_MAX_MODEL_LEN}}" \
-    --trust-remote-code \
-    --port "${{PORT}}" &
+# --- Launch vLLM server via ASU's Apptainer recipe ---
+# Binds expose the host's Habana runtime & a writable log dir to the
+# container; without them HPU init fails with synStatus=26.
+apptainer exec \
+    --bind /usr/lib64:/host-lib64 \
+    --bind /usr/lib/habanalabs:/usr/lib/habanalabs \
+    --bind /opt/habanalabs:/opt/habanalabs \
+    --bind /usr/bin/shim_ctl:/usr/bin/shim_ctl \
+    --bind "${{HF_CACHE_HOST}}:/mnt/hf_cache" \
+    --bind "${{VLLM_CD_DIR}}:/workspace/.cd" \
+    --bind "${{HABANA_LOGS}}:/var/log/habana_logs" \
+    --pwd /workspace/.cd \
+    --writable-tmpfs \
+    "${{VLLM_GAUDI_SIF}}" \
+    python3 -m entrypoints.entrypoint_main server &
 SERVER_PID=$!
 echo "vLLM PID: ${{SERVER_PID}}"
 
