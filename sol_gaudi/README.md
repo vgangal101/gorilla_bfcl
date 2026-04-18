@@ -67,6 +67,28 @@ BFCL_TEST_CATEGORY=all_scoring ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_8b
 
 Available model keys: `qwen3_4b`, `qwen3_8b`, `qwen3_14b`, `qwen3_32b`, `gemma4_31b`.
 
+## Test coverage (what this sweep does and does not run)
+
+By default, the generated SLURM scripts pass `--test-category single_turn,multi_turn` — **17 of BFCL's 22 scoring categories**:
+
+- `non_live` (7): `simple_python`, `simple_java`, `simple_javascript`, `multiple`, `parallel`, `parallel_multiple`, `irrelevance`
+- `live` (6): `live_simple`, `live_multiple`, `live_parallel`, `live_parallel_multiple`, `live_irrelevance`, `live_relevance`
+- `multi_turn` (4): `multi_turn_base`, `multi_turn_miss_func`, `multi_turn_miss_param`, `multi_turn_long_context`
+
+**Skipped on purpose:**
+
+| skipped | count | reason |
+| --- | --- | --- |
+| `web_search_base`, `web_search_no_snippet` | 2 | Requires a paid [SerpAPI](https://serpapi.com/) key. Free tier (100 searches/mo) is nowhere near the ~300–600 searches a full run consumes; paid starts at $75/mo. Out of scope for a class budget. |
+| `memory_kv`, `memory_vector`, `memory_rec_sum` | 3 | 465 base cases × 3 backends adds multiple hours of walltime per model without changing the headline story for this hardware comparison. Re-enable later if we want the full leaderboard parity. |
+
+To override and run something different for a single submission:
+
+```bash
+BFCL_TEST_CATEGORY=all_scoring ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_8b
+# (requires SERPAPI_API_KEY in berkeley-function-call-leaderboard/.env for web_search_*)
+```
+
 ## 5. Reading results
 
 Aggregate CSVs live in `berkeley-function-call-leaderboard/score/`:

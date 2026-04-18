@@ -96,6 +96,12 @@ Key operational constraints:
 - BFCL code is **unchanged** for Qwen3 on Gaudi — the SLURM script launches the Apptainer vLLM server and uses `bfcl generate --skip-server-setup` with `REMOTE_OPENAI_BASE_URL`. Gemma-4-31B is the only model that requires BFCL source edits (`supported_models.py` + `model_config.py`).
 - The workshop deck only explicitly listed DeepSeek-R1, Llama 3.x, Qwen 2.5, and Qwen2.5-VL-7B as HPU-vLLM-supported; Qwen3-* and Gemma 4 are not on that list. Always run `manage_bfcl_gaudi.sh submit qwen3_4b` as a smoke test before queuing the full sweep.
 
+Coverage scope for this sweep:
+- Default `BFCL_TEST_CATEGORY` in the generated SLURM scripts is `single_turn,multi_turn` — 17 of BFCL's 22 scoring categories.
+- `web_search_*` is **skipped**: requires a paid SerpAPI key ($75/mo+; free tier of 100 searches/month is well below what one run needs). Out of scope for a class budget.
+- `memory_*` is **skipped**: 465 cases × 3 backends adds multi-hour walltime per model without changing the hardware-comparison story. Re-enable for full leaderboard parity.
+- See `sol_gaudi/README.md` "Test coverage" for the full rationale and the override recipe.
+
 KV-cache tuning (if a run OOMs or stalls — e.g. long multi-turn / agentic trajectories):
 - `VLLM_MAX_MODEL_LEN` in `sol_gaudi/config.env` — context budget per sequence; KV cost scales linearly with it. Drop from the default 40960 first.
 - `VLLM_GPU_MEMORY_UTILIZATION` — default 0.85; push to 0.92 to squeeze more KV out of HBM before adding HPUs.
