@@ -103,11 +103,10 @@ export LOCAL_SERVER_PORT="${PORT}"
 
 # --- Run BFCL generate + evaluate ---
 cd "${BFCL_ROOT}"
-# Default coverage: single_turn (non_live + live) + multi_turn. 17 categories.
-# We intentionally skip web_search_* (requires paid SerpAPI key, ~$75/mo) and
-# memory_* (adds hours of runtime without changing the story for this sweep).
-# See sol_gaudi/README.md "Test coverage" for details.
-TEST_CAT="${BFCL_TEST_CATEGORY:-single_turn,multi_turn}"
+# Default coverage: single_turn (non_live + live) + multi_turn + memory.
+# 20 of 22 scoring categories. web_search_* is skipped because it requires a
+# paid SerpAPI key (~$75/mo). See sol_gaudi/README.md "Test coverage".
+TEST_CAT="${BFCL_TEST_CATEGORY:-single_turn,multi_turn,memory}"
 echo "Running bfcl generate on categories: ${TEST_CAT}"
 bfcl generate --model "Qwen/Qwen3-4B-Instruct-2507" --test-category "${TEST_CAT}" --skip-server-setup --num-threads "${BFCL_NUM_THREADS}"
 
