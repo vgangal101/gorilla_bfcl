@@ -1,0 +1,43 @@
+# LLM-Modulo full-coverage config — every single-turn AST category the
+# runner supports (see ALLOWED_CATEGORIES in run_bfcl_llm_modulo.py).
+# Multi-turn, agentic, memory, irrelevance/relevance, and format_sensitivity
+# are NOT supported by the modulo critic bank and cannot be added here.
+#
+# Invoke (Gaudi):
+#   MODULO_CONFIG=configs/modulo_full.yaml \
+#     ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_8b_modulo
+
+model: Qwen/Qwen3-8B
+endpoint: null
+api_key: null
+
+# Qwen3 thinking-mode recommendation. BFCL's default of 0.001 collapses
+# Qwen3 into repetition when thinking is on.
+temperature: 0.6
+
+categories:
+  - simple
+  - simple_python
+  - simple_java
+  - simple_javascript
+  - multiple
+  - parallel
+  - parallel_multiple
+  - live_simple
+  - live_multiple
+  - live_parallel
+  - live_parallel_multiple
+
+modulo:
+  max_iters: 5
+  critics:
+    - FunctionValidityCritic
+    - ArgumentSchemaCritic
+    - ArgumentValueCritic
+    - DependencyCritic
+    - RedundancyCritic
+
+output:
+  result_dir: result_modulo
+  num_samples: null
+  allow_overwrite: false
