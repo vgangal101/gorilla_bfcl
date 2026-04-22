@@ -8,6 +8,10 @@ from schemas import FunctionCall, Plan
 
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL)
+# Qwen3 (and other reasoning models) prepend a <think>...</think> block with
+# free-form reasoning before the answer. Strip it so the downstream JSON
+# parse sees only the plan.
+_THINK_RE = re.compile(r"<think\b[^>]*>.*?</think>", re.DOTALL | re.IGNORECASE)
 
 
 class ProposalParser:
@@ -18,6 +22,7 @@ class ProposalParser:
         a human-readable message describing what went wrong.
         """
         s = (raw or "").strip()
+        s = _THINK_RE.sub("", s).strip()
         m = _FENCE_RE.search(s)
         if m:
             s = m.group(1).strip()
