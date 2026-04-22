@@ -11,7 +11,8 @@ source "${SCRIPT_DIR}/config.env" 2>/dev/null || source "${SCRIPT_DIR}/config.en
 
 GREEN='\033[0;32m'; BLUE='\033[0;34m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 
-MODELS=(qwen3_4b qwen3_8b qwen3_14b qwen3_32b gemma4_31b)
+MODELS=(qwen3_4b qwen3_8b qwen3_14b qwen3_32b gemma4_31b
+        qwen3_4b_modulo qwen3_8b_modulo qwen3_14b_modulo qwen3_32b_modulo)
 
 print_usage() {
     cat <<EOF
@@ -29,12 +30,16 @@ Commands:
     help                  This message
 
 Environment overrides:
-    BFCL_TEST_CATEGORY    Override test categories per submission
-    BFCL_NUM_THREADS      Override num-threads per submission
+    BFCL_TEST_CATEGORY    Override test categories per submission (bfcl runs only)
+    BFCL_NUM_THREADS      Override num-threads per submission (bfcl runs only)
+    MODULO_CONFIG         Override LLM-Modulo config YAML path (modulo runs only)
+    MODULO_RESULT_DIR     Override LLM-Modulo result dir (default: result_modulo)
 
 Examples:
     ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_4b
     BFCL_TEST_CATEGORY=all_scoring ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_32b
+    ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_8b_modulo
+    MODULO_CONFIG=configs/simple_python.yaml ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_8b_modulo
     ./sol_gaudi/manage_bfcl_gaudi.sh submit-all
     ./sol_gaudi/manage_bfcl_gaudi.sh status
     ./sol_gaudi/manage_bfcl_gaudi.sh logs 12345
@@ -69,13 +74,19 @@ submit_one() {
         return 1
     fi
     mkdir -p "${LOGS_DIR}"
-    echo -e "${BLUE}Submitting ${model}${NC} (test-category=${BFCL_TEST_CATEGORY})"
+    if [[ "${model}" == *_modulo ]]; then
+        echo -e "${BLUE}Submitting ${model}${NC} (config=${MODULO_CONFIG:-<from .slurm default>} result-dir=${MODULO_RESULT_DIR:-result_modulo})"
+    else
+        echo -e "${BLUE}Submitting ${model}${NC} (test-category=${BFCL_TEST_CATEGORY})"
+    fi
     local job_id
     job_id=$(BFCL_TEST_CATEGORY="${BFCL_TEST_CATEGORY}" \
              BFCL_NUM_THREADS="${BFCL_NUM_THREADS}" \
+             MODULO_CONFIG="${MODULO_CONFIG:-}" \
+             MODULO_RESULT_DIR="${MODULO_RESULT_DIR:-}" \
              sbatch --parsable \
                     --chdir "${REPO_ROOT}" \
-                    --export=ALL,BFCL_TEST_CATEGORY,BFCL_NUM_THREADS \
+                    --export=ALL,BFCL_TEST_CATEGORY,BFCL_NUM_THREADS,MODULO_CONFIG,MODULO_RESULT_DIR \
                     "${slurm}")
     echo -e "${GREEN}Submitted:${NC} ${model} -> job ${job_id}"
     echo "  watch: ./sol_gaudi/manage_bfcl_gaudi.sh status ${job_id}"
