@@ -5,6 +5,12 @@ from overrides import override
 
 
 class QwenHandler(OSSHandler):
+    # Qwen3 runs in thinking mode (no empty <think></think> prefill in _format_prompt);
+    # Qwen's own recommendation for thinking mode is temperature=0.6 / top_p=0.95 /
+    # top_k=20 (see Qwen3 model card). BFCL's CLI default of 0.001 triggers repetition
+    # collapse, so we force 0.6 here regardless of the CLI --temperature flag.
+    _THINKING_TEMPERATURE = 0.6
+
     def __init__(
         self,
         model_name,
@@ -14,7 +20,9 @@ class QwenHandler(OSSHandler):
         dtype="bfloat16",
         **kwargs,
     ) -> None:
-        super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
+        super().__init__(
+            model_name, self._THINKING_TEMPERATURE, registry_name, is_fc_model, **kwargs
+        )
 
     @override
     def _format_prompt(self, messages, function):
@@ -175,7 +183,7 @@ class QwenHandler(OSSHandler):
                 if idx == len(messages) - 1 or next_role != "tool":
                     formatted_prompt += "<|im_end|>\n"
 
-        formatted_prompt += "<|im_start|>assistant\n<think>\n\n</think>\n\n"
+        formatted_prompt += "<|im_start|>assistant\n"
         return formatted_prompt
 
     @override
