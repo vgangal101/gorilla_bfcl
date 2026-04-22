@@ -1,0 +1,37 @@
+# LLM-Modulo smoke-test config.
+# Point a Gaudi modulo job at this to verify end-to-end wiring without
+# burning a full run:
+#
+#   MODULO_CONFIG=configs/smoketest.yaml \
+#     ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_4b_modulo
+#
+# `model:` here is ignored — the SLURM template passes --model based on
+# whichever <model>_modulo job you submit. Same for endpoint/api_key
+# (filled in from REMOTE_OPENAI_BASE_URL inside the job).
+
+model: Qwen/Qwen3-4B-Instruct-2507
+endpoint: null
+api_key: null
+
+# 0.6 is Qwen3's recommendation for thinking mode; 0.0 invites repetition
+# collapse on Qwen3 thinking which is what the smoke test is most likely
+# to trip over first.
+temperature: 0.6
+
+categories:
+  - simple_python
+
+modulo:
+  # Smaller iteration budget so a smoke run finishes in minutes, not hours.
+  max_iters: 2
+  critics:
+    - FunctionValidityCritic
+    - ArgumentSchemaCritic
+    - ArgumentValueCritic
+
+output:
+  # Isolated dir so a smoke run never overwrites a real result_modulo run.
+  result_dir: result_modulo_smoke
+  # Cap entries so the loop touches the pipeline ~10 times and exits.
+  num_samples: 10
+  allow_overwrite: true
