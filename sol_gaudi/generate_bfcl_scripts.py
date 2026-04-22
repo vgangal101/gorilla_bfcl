@@ -17,12 +17,16 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 SLURM_DIR = SCRIPT_DIR / "slurm"
 
 # model_key -> (hf_id, hpus, tp, cpus, mem, time)
+# Wall clocks are sized for Qwen3 thinking mode (much higher output-token budget
+# than non-thinking) — qwen3_8b previously hit the 8h limit in thinking mode, so
+# all Qwen models are given 1.5-2x headroom. gemma4 is unaffected by thinking
+# mode but kept at 24h to match the 32B class.
 MODELS: dict[str, tuple[str, int, int, int, str, str]] = {
-    "qwen3_4b":    ("Qwen/Qwen3-4B-Instruct-2507", 1, 1, 24, "160G", "06:00:00"),
-    "qwen3_8b":    ("Qwen/Qwen3-8B",       1, 1, 24, "160G", "08:00:00"),
-    "qwen3_14b":   ("Qwen/Qwen3-14B",      2, 2, 32, "200G", "10:00:00"),
-    "qwen3_32b":   ("Qwen/Qwen3-32B",      4, 4, 60, "384G", "12:00:00"),
-    "gemma4_31b":  ("google/gemma-4-31B-it", 4, 4, 60, "384G", "12:00:00"),
+    "qwen3_4b":    ("Qwen/Qwen3-4B-Instruct-2507", 1, 1, 24, "160G", "10:00:00"),
+    "qwen3_8b":    ("Qwen/Qwen3-8B",       1, 1, 24, "160G", "16:00:00"),
+    "qwen3_14b":   ("Qwen/Qwen3-14B",      2, 2, 32, "200G", "20:00:00"),
+    "qwen3_32b":   ("Qwen/Qwen3-32B",      4, 4, 60, "384G", "24:00:00"),
+    "gemma4_31b":  ("google/gemma-4-31B-it", 4, 4, 60, "384G", "24:00:00"),
 }
 
 TEMPLATE = r"""#!/bin/bash
