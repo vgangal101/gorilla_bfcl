@@ -1,0 +1,28 @@
+# Run LLM-Modulo against the `memory_kv` BFCL category.
+#
+# NOT YET SUPPORTED by run_bfcl_modulo.py v1 — memory categories need
+# an agentic retrieval loop (backend: key/value store) plus turn state
+# that the single-shot modulo runner doesn't wire up. Scaffold only;
+# runner will exit(2) until agentic/memory support lands.
+
+model: Qwen/Qwen3-14B
+endpoint: null
+api_key: null
+temperature: 0.0
+
+categories:
+  - memory_kv
+
+modulo:
+  max_iters: 5
+  critics:
+    - FunctionValidityCritic
+    - ArgumentSchemaCritic
+    - ArgumentValueCritic
+    - DependencyCritic
+    - RedundancyCritic
+
+output:
+  result_dir: result_modulo
+  num_samples: null
+  allow_overwrite: false

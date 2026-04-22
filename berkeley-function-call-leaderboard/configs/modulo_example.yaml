@@ -1,0 +1,51 @@
+# Example config for run_bfcl_modulo.py
+#
+# Usage:
+#   python run_bfcl_modulo.py --config configs/modulo_example.yaml
+#
+# Any CLI flag passed to the script (e.g. --model, --num-samples) will
+# override the corresponding setting below.
+
+# --- model + endpoint ---------------------------------------------------
+model: Qwen/Qwen3-14B
+
+# Leave `endpoint` unset to fall back to $REMOTE_OPENAI_BASE_URL, else
+# http://$LOCAL_SERVER_ENDPOINT:$LOCAL_SERVER_PORT/v1 (localhost:1053
+# default). Same envs BFCL's --skip-server-setup relies on.
+endpoint: null
+api_key: null
+temperature: 0.0
+
+# --- BFCL subtasks ------------------------------------------------------
+# Must all be single-turn AST categories. The script hard-fails on anything
+# else (multi_turn_*, agentic/memory/web_search_*, irrelevance, etc.).
+categories:
+  - simple_python
+  - multiple
+  - parallel
+  - parallel_multiple
+
+# --- LLM-Modulo runtime -------------------------------------------------
+modulo:
+  # How many Generate -> Test -> Critique -> Backprompt rounds before
+  # giving up on an entry.
+  max_iters: 5
+
+  # Which critics to run. Unknown names error out.
+  # ExecutionCritic is intentionally not available in BFCL mode (BFCL
+  # tools aren't executable here); omit it or request it and get a clear
+  # error with the list of available critics.
+  critics:
+    - FunctionValidityCritic
+    - ArgumentSchemaCritic
+    - ArgumentValueCritic
+    - DependencyCritic
+    - RedundancyCritic   # soft; surfaces duplicate calls without blocking
+
+# --- output -------------------------------------------------------------
+output:
+  # Write to a dedicated dir so a baseline `run_bfcl_generate.py` run and
+  # this modulo run can be scored side-by-side with `bfcl evaluate`.
+  result_dir: result_modulo
+  num_samples: null       # e.g. 20 to smoke-test quickly
+  allow_overwrite: false

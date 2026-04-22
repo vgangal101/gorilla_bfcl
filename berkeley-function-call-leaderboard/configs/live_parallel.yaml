@@ -1,0 +1,24 @@
+# Run LLM-Modulo against the `live_parallel` BFCL category.
+# Invoke: python run_bfcl_modulo.py --config configs/live_parallel.yaml
+
+model: Qwen/Qwen3-14B
+endpoint: null
+api_key: null
+temperature: 0.0
+
+categories:
+  - live_parallel
+
+modulo:
+  max_iters: 5
+  critics:
+    - FunctionValidityCritic
+    - ArgumentSchemaCritic
+    - ArgumentValueCritic
+    - DependencyCritic
+    - RedundancyCritic
+
+output:
+  result_dir: result_modulo
+  num_samples: null
+  allow_overwrite: false

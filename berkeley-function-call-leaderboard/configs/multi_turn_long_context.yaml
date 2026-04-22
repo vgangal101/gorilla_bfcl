@@ -1,0 +1,29 @@
+# Run LLM-Modulo against the `multi_turn_long_context` BFCL category.
+#
+# NOT YET SUPPORTED by run_bfcl_modulo.py v1 — multi-turn categories
+# require per-turn state and conversation-history handling that the
+# single-shot modulo loop doesn't implement. `long_context` also
+# stresses context-window management. Scaffold only; runner will
+# exit(2) until multi-turn support lands.
+
+model: Qwen/Qwen3-14B
+endpoint: null
+api_key: null
+temperature: 0.0
+
+categories:
+  - multi_turn_long_context
+
+modulo:
+  max_iters: 5
+  critics:
+    - FunctionValidityCritic
+    - ArgumentSchemaCritic
+    - ArgumentValueCritic
+    - DependencyCritic
+    - RedundancyCritic
+
+output:
+  result_dir: result_modulo
+  num_samples: null
+  allow_overwrite: false
