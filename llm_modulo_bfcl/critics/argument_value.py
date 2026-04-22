@@ -73,6 +73,15 @@ class ArgumentValueCritic(Critic):
                             step_index=i,
                             suggestion=f"Use a value >= {spec['minimum']}.",
                         )
+                    if "exclusiveMinimum" in spec and val <= spec["exclusiveMinimum"]:
+                        return self._fail(
+                            error=(
+                                f"argument '{arg}' = {val} must be strictly greater than "
+                                f"exclusiveMinimum {spec['exclusiveMinimum']}."
+                            ),
+                            step_index=i,
+                            suggestion=f"Use a value > {spec['exclusiveMinimum']}.",
+                        )
                     if "maximum" in spec and val > spec["maximum"]:
                         return self._fail(
                             error=(
@@ -81,6 +90,15 @@ class ArgumentValueCritic(Critic):
                             ),
                             step_index=i,
                             suggestion=f"Use a value <= {spec['maximum']}.",
+                        )
+                    if "exclusiveMaximum" in spec and val >= spec["exclusiveMaximum"]:
+                        return self._fail(
+                            error=(
+                                f"argument '{arg}' = {val} must be strictly less than "
+                                f"exclusiveMaximum {spec['exclusiveMaximum']}."
+                            ),
+                            step_index=i,
+                            suggestion=f"Use a value < {spec['exclusiveMaximum']}.",
                         )
 
                 if isinstance(val, str) and "pattern" in spec:

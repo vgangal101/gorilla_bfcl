@@ -50,3 +50,6 @@ berkeley-function-call-leaderboard/**/*.lock
 sol_gaudi/logs/
 sol_gaudi/containers/
 sol_gaudi/config.env
+
+# Claude Code local memory/settings
+.claude/

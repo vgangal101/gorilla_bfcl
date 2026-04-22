@@ -72,15 +72,15 @@ class ArgumentSchemaCritic(Critic):
                 expected = _TYPE_MAP.get(t)
                 if expected is None:
                     continue  # unknown type keyword; skip
-                # bool is a subclass of int in Python; reject bool where integer expected.
-                if t == "integer" and isinstance(val, bool):
+                # bool is a subclass of int/float in Python; reject bool for any numeric type.
+                if t in ("integer", "number") and isinstance(val, bool):
                     return self._fail(
                         error=(
                             f"argument '{arg}' for '{step.function}' has wrong type; "
-                            f"expected integer, got boolean."
+                            f"expected {t}, got boolean."
                         ),
                         step_index=i,
-                        suggestion=f"Provide {arg} as integer.",
+                        suggestion=f"Provide {arg} as {t}.",
                     )
                 if not isinstance(val, expected):
                     return self._fail(
