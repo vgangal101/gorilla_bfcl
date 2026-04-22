@@ -1,0 +1,47 @@
+# =============================================================================
+# Download BFCL results for Qwen3-14B and Qwen3-32B from SOL to your laptop
+# =============================================================================
+# Replace <USER> with your ASU SOL username.
+# Run the SOL section while logged into SOL (login.sol.rc.asu.edu).
+# Run the LOCAL section in a terminal on your own laptop (NOT on SOL).
+# =============================================================================
+
+
+# ---- [1] ON SOL --------------------------------------------------------------
+
+cd /scratch/<USER>/gorilla_bfcl/berkeley-function-call-leaderboard
+
+tar czf ~/bfcl_qwen3_14b_32b.tgz result/Qwen_Qwen3-14B result/Qwen_Qwen3-32B score/Qwen_Qwen3-14B score/Qwen_Qwen3-32B
+
+ls -lh ~/bfcl_qwen3_14b_32b.tgz
+# ^ confirm the file exists and note its size
+
+
+# ---- [2] ON YOUR LAPTOP (local terminal) ------------------------------------
+# Open a NEW terminal on your own machine. Do NOT run these on SOL.
+# If off-campus, connect to the ASU VPN first.
+
+scp <USER>@login.sol.rc.asu.edu:~/bfcl_qwen3_14b_32b.tgz ~/Downloads/
+
+# Verify:
+ls -lh ~/Downloads/bfcl_qwen3_14b_32b.tgz
+
+
+# ---- [3] (OPTIONAL) UNPACK ON YOUR LAPTOP ----------------------------------
+cd ~/Downloads
+mkdir -p bfcl_qwen3_14b_32b
+tar xzf bfcl_qwen3_14b_32b.tgz -C bfcl_qwen3_14b_32b
+ls bfcl_qwen3_14b_32b
+
+
+# ---- [4] (OPTIONAL) CLEAN UP TARBALL ON SOL --------------------------------
+# After you've confirmed the download on your laptop:
+# rm ~/bfcl_qwen3_14b_32b.tgz
+
+
+# ---- TROUBLESHOOTING --------------------------------------------------------
+# "Could not resolve hostname sol-login04.asu.edu" (or any sol-loginNN.asu.edu):
+#   sol-loginNN is the internal node name shown in your SOL shell prompt; it is
+#   NOT a routable hostname. Use the public entry point instead:
+#       login.sol.rc.asu.edu
+#   From off-campus, connect to the ASU VPN (Cisco Secure Client) first.
