@@ -16,7 +16,6 @@ api_key: null
 temperature: 0.6
 
 categories:
-  - simple
   - simple_python
   - simple_java
   - simple_javascript

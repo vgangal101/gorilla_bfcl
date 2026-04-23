@@ -114,7 +114,6 @@ _DEFAULTS: dict[str, Any] = {
 # ----------------------------------------------------------------------
 
 ALLOWED_CATEGORIES: set[str] = {
-    "simple",
     "simple_python",
     "simple_java",
     "simple_javascript",
