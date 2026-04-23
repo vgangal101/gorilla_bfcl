@@ -11,9 +11,12 @@ model: Qwen/Qwen3-8B
 endpoint: null
 api_key: null
 
-# Qwen3 thinking-mode recommendation. BFCL's default of 0.001 collapses
-# Qwen3 into repetition when thinking is on.
-temperature: 0.6
+# Match BFCL baseline (CLI default). Earlier comment here warned 0.001
+# collapses Qwen3 into repetition with thinking on, but baseline Gaudi
+# runs at this setting produced 86-96% on single-turn AST without
+# collapse. Modulo was running at 0.6, which diverged from baseline and
+# hurt AST accuracy; match baseline so the comparison is apples-to-apples.
+temperature: 0.001
 
 categories:
   - simple_python
