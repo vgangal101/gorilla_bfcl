@@ -1,0 +1,14 @@
+{
+    "core_memory": {
+        "patient_age": "mid-50s",
+        "overall_health_attitude": "Focuses on taking health one step at a time, rather than worrying about aging",
+        "body_listening_practice": "Listens to body signals\u2014takes rest when needed, does not ignore discomfort",
+        "key_health_takeaway": "Proactivity is essential; individuals must take charge, stay informed, and actively manage their health"
+    },
+    "archival_memory": {
+        "patient_health_history": "Patient has experienced various health ups and downs, including surgeries, chronic conditions, and medications. Currently managing joint pain and seasonal illnesses, with a proactive approach to health in Kansas.",
+        "patient_perception_of_health_management": "Views health management as a part-time job due to long-term health challenges and seasonal factors in Kansas.",
+        "geographical_health_impact": "Winters in Kansas contribute to increased joint pain and seasonal illnesses, requiring extra precautions.",
+        "health_evolution_over_time": "Transitioned from minimal doctor visits in youth to a structured, ongoing health management routine in mid-50s."
+    }
+}

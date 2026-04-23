@@ -1,0 +1,12 @@
+{
+    "core_memory": {
+        "next_id": 0,
+        "store": {}
+    },
+    "archival_memory": {
+        "next_id": 1,
+        "store": {
+            "0": "The Managing Director is currently balancing three major transactions: an $8.5B semiconductor merger between QuantumChip Technologies and Silicon Core, navigating U.S.-China regulatory approvals; a $3.2B leveraged buyout of VertexSoft, a fast-growing SaaS provider, with complex debt financing; and a confidential $5B+ cross-border acquisition in renewable energy by Solaris Energy Group from Nordic Renewables, facing challenges in aligning government incentives across jurisdictions. Every Monday at 7 AM, the team holds a weekly deal call to accommodate Asian market participants. A potential $20B take-private transaction involving Omnix AI, an AI powerhouse, is under consideration and could be transformative for the firm."
+        }
+    }
+}

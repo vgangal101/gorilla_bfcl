@@ -1,0 +1,18 @@
+{
+    "core_memory": {
+        "next_id": 7,
+        "store": {
+            "0": "Type 2 Diabetes diagnosed 10 years ago. Managed through diet changes(reduced sugary snacks, carb monitoring), regular exercise(30-minute walks post-dinner), blood sugar checks, and doctor guidance.",
+            "1": "Type 2 Diabetes diagnosed 10 years ago. Managed through diet changes(reduced sugary snacks, carb monitoring), regular exercise(30-minute walks post-dinner), blood sugar checks, and doctor guidance.",
+            "2": "Hypertension(family history) managed with medication, stress management, and exercise(walking, yoga, treadmill in winter). ER visit due to dangerously high blood pressure.",
+            "3": "Osteoarthritis(knees, hands) managed through physical therapy, ergonomic adjustments, proper footwear, and glucosamine supplements. Weather changes exacerbate symptoms.",
+            "4": "Hypothyroidism diagnosed early 40s due to exhaustion and unexplained weight gain. Initially misdiagnosed as aging; managed with medication, requiring patience and regular doctor check-ins.",
+            "5": "Gallbladder removed due to severe gallstones and attack. Post-surgery digestion affected; avoid fried/greasy foods. Recovery was manageable but dietary adjustments necessary.",
+            "6": "Seasonal allergies(spring, pollen). Pneumonia history; now vaccinated annually for flu and pneumonia. Aware of infection risks increasing with age."
+        }
+    },
+    "archival_memory": {
+        "next_id": 0,
+        "store": {}
+    }
+}

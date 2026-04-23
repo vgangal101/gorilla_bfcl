@@ -1,0 +1,55 @@
+{
+    "core_memory": {
+        "next_id": 28,
+        "store": {
+            "15": "Finish security compliance training module.",
+            "16": "Finalize quarterly budget.",
+            "17": "Review vendor contract before signing.",
+            "18": "Finish security compliance training module.",
+            "25": "Schedule dentist appointment.",
+            "26": "Stick to gym 3x this week.",
+            "27": "Call mom\u2014it\u2019s been a while."
+        }
+    },
+    "archival_memory": {
+        "next_id": 36,
+        "store": {
+            "0": "Wash dishes tonight before it piles up.",
+            "1": "Laundry\u2014separate colors, don\u2019t mix whites.",
+            "2": "Fix leaky sink in the kitchen\u2014YouTube how-to if needed.",
+            "3": "Wash dishes tonight before it piles up.",
+            "4": "Laundry\u2014separate colors, don\u2019t mix whites.",
+            "5": "Fix leaky sink in the kitchen\u2014YouTube how-to if needed.",
+            "6": "Trash\u2014take out Wednesday morning.",
+            "7": "Vacuum living room.",
+            "8": "Mop the kitchen floor\u2014sticky from last night\u2019s spill.",
+            "9": "Car: Wash and vacuum on Sunday.",
+            "10": "Check tire pressure.",
+            "11": "Refill windshield wiper fluid.",
+            "12": "Organizing: Sort through closet\u2014donate old clothes.",
+            "13": "Shred old mail.",
+            "14": "Restock pantry\u2014running low on rice and cereal.",
+            "15": "DIY Fixes: Tighten loose cabinet handle.",
+            "16": "Replace bathroom lightbulb.",
+            "17": "Patch up minor wall scuffs.",
+            "18": "Daycare: Drop-off at 8 AM, pick-up at 5 PM.",
+            "19": "Monthly payment due Friday.",
+            "20": "Bring extra set of clothes\u2014last set got muddy.",
+            "21": "Elementary school: Finalize admission paperwork.",
+            "22": "Attend orientation next Thursday.",
+            "23": "Research after-school programs.",
+            "24": "Doctor: Kid\u2019s cold isn\u2019t getting better\u2014schedule pediatrician visit.",
+            "25": "Check vaccine schedule\u2014next shots due in two months.",
+            "26": "Monitor food allergies\u2014keep a log if symptoms flare up.",
+            "27": "Doctor: Kid\u2019s cold isn\u2019t getting better\u2014schedule pediatrician visit.",
+            "28": "Check vaccine schedule\u2014next shots due in two months.",
+            "29": "Monitor food allergies\u2014keep a log if symptoms flare up.",
+            "30": "Family time: Take kid to park this weekend.",
+            "31": "Pick out a new bedtime story book.",
+            "32": "Help with counting practice\u2014teacher says focus on numbers 1-20.",
+            "33": "Shopping: Buy more diapers.",
+            "34": "Get school supplies\u2014crayons, notebooks, glue sticks.",
+            "35": "Pack extra snacks in daycare bag."
+        }
+    }
+}

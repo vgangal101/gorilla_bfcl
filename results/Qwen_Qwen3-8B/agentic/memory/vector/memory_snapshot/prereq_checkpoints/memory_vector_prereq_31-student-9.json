@@ -1,0 +1,51 @@
+{
+    "core_memory": {
+        "next_id": 9,
+        "store": {
+            "1": "User's favorite class is Advanced Algorithms, covering dynamic programming and approximation algorithms for NP-hard problems. Professor effectively explains complex concepts, making challenging topics accessible.",
+            "2": "User is enrolled in CS 2631 Distributed Systems, a challenging course involving a group project to simulate decentralized file storage. Collaboration challenges, concurrency issues, node failures, and a resolved bug from a misplaced bracket in a config file.",
+            "3": "User is taking Game Design elective(counts toward major with other classes). Professor from industry with indie game experience. Topics: 2D/3D engines, physics, UX design. Recent project: labyrinth mini-game focusing on difficulty curve balancing to prevent player frustration.",
+            "4": "User enrolled in Quantum Computing course focusing on conceptual understanding with code examples in quantum circuit frameworks. Studying Grover\u2019s and Shor\u2019s algorithms to compare theoretical performance against classical methods.",
+            "5": "PI provides career guidance and scholarship recommendations. Attended global immersive analytics workshop with experts, observing debates on technical frameworks and theories.",
+            "7": "Tony, my roommate and best friend since freshman year, became a close confidant through late-night coding discussions. Despite different majors, our shared love for hands-on work led to cross-disciplinary robotics projects. He\u2019s my go-to for support and pizza after tough assignments.",
+            "8": "Sailing club friends offer unique bond through shared problem-solving and trust. CS students decompress by racing boats, treating strategy like puzzles. Early morning sessions build mutual respect; Mariah encouraged my data science research application with unwavering support."
+        }
+    },
+    "archival_memory": {
+        "next_id": 32,
+        "store": {
+            "0": "User's weekly schedule: Mondays/Wednesdays: Advanced Algorithms, Distributed Systems, Capstone meetings. Tuesdays/Thursdays: Quantum Computing, Game Design, Philosophy of Mind. Fridays: assignments/research. Undergrad research in data visualization for scientific datasets.",
+            "1": "User discusses balancing group projects: Capstone requires ~10h/week, Distributed Systems project with weekly meetings and Slack/Discord coordination. Challenges include scheduling 5 people and managing academic project pressures.",
+            "2": "User reflects on academic growth, confidence in problem-solving and time management, and the rewarding nature of challenging courses. Emphasizes skills building for future career despite late nights and project pressures.",
+            "3": "User discusses sailing as a unique hobby, rooted in childhood memories with their father and local sailing club experiences. Highlights the sense of freedom and problem-solving parallels with coding, serving as a stress-relief from academic pressures.",
+            "4": "User discusses sailing as a unique hobby, rooted in childhood memories with their father and local sailing club experiences. Highlights the sense of freedom and problem-solving parallels with coding, serving as a stress-relief from academic pressures.",
+            "5": "Campus life is vibrant with many communities beyond coding, making this place feel like a second home.",
+            "6": "Regret not joining clubs as a freshman due to academic focus; now involved in Computer Science Society, which hosts tech discussions, project shares, and industry talks. Supportive environment for learning concepts like concurrency and containerization.",
+            "7": "Joined VR/AR Club since sophomore year, focusing on immersive analytics. Club offers hands-on experience with VR lab, demos of projects like AR tutor for math, fostering creativity and support for emerging tech research.",
+            "8": "Campus central lawn hosts student org booths with fliers, freebies like pizza, and events like Tech Fest featuring demos, recruiters, and innovation showcases for CS/engineering students.",
+            "9": "User discusses travel experiences, emphasizing strategic planning around a busy CS schedule, highlighting adventures that created favorite memories despite time constraints.",
+            "10": "User recounts a pre-sophomore year sailing trip off Maine's coast, detailing experiences in Bar Harbor, learning navigation techniques from a local instructor, and memorable moments like sunrise sails and dockside lobster rolls.",
+            "11": "User recounts a pre-sophomore year sailing trip off Maine's coast, detailing experiences in Bar Harbor, learning navigation techniques from a local instructor, and memorable moments like sunrise sails and dockside lobster rolls.",
+            "12": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "13": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "14": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "15": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "16": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "17": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "18": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "19": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "20": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "21": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "22": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "23": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "24": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "25": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "26": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "27": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "28": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "29": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "30": "User shares a sailing trip off Maine's coast before sophomore year, highlighting learning navigation techniques from a local instructor, sunrise sails, and memorable lobster rolls at a dockside shack.",
+            "31": "User wakes up at 6:30 AM, checks calendar, stretches beside bed, showers, and avoids sluggishness by prioritizing morning routine despite occasional late nights coding/gaming."
+        }
+    }
+}

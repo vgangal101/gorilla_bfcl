@@ -1,0 +1,37 @@
+{
+    "core_memory": {
+        "next_id": 28,
+        "store": {
+            "15": "Finish security compliance training module.",
+            "16": "Finalize quarterly budget.",
+            "17": "Review vendor contract before signing.",
+            "18": "Finish security compliance training module.",
+            "25": "Schedule dentist appointment.",
+            "26": "Stick to gym 3x this week.",
+            "27": "Call mom\u2014it\u2019s been a while."
+        }
+    },
+    "archival_memory": {
+        "next_id": 18,
+        "store": {
+            "0": "Wash dishes tonight before it piles up.",
+            "1": "Laundry\u2014separate colors, don\u2019t mix whites.",
+            "2": "Fix leaky sink in the kitchen\u2014YouTube how-to if needed.",
+            "3": "Wash dishes tonight before it piles up.",
+            "4": "Laundry\u2014separate colors, don\u2019t mix whites.",
+            "5": "Fix leaky sink in the kitchen\u2014YouTube how-to if needed.",
+            "6": "Trash\u2014take out Wednesday morning.",
+            "7": "Vacuum living room.",
+            "8": "Mop the kitchen floor\u2014sticky from last night\u2019s spill.",
+            "9": "Car: Wash and vacuum on Sunday.",
+            "10": "Check tire pressure.",
+            "11": "Refill windshield wiper fluid.",
+            "12": "Organizing: Sort through closet\u2014donate old clothes.",
+            "13": "Shred old mail.",
+            "14": "Restock pantry\u2014running low on rice and cereal.",
+            "15": "DIY Fixes: Tighten loose cabinet handle.",
+            "16": "Replace bathroom lightbulb.",
+            "17": "Patch up minor wall scuffs."
+        }
+    }
+}

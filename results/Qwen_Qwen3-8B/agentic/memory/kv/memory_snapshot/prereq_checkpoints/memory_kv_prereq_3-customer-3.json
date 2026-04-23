@@ -1,0 +1,17 @@
+{
+    "core_memory": {
+        "user_replace_policy_inquiry": "Michael inquires about replacement process for lost/damaged package. Asks if company files carrier claim or if customer must initiate it. Concerns about financial impact due to purchase being a self-gift.",
+        "user_damage_report": "Michael received damaged espresso machine. Requesting replacement or repair.",
+        "user_damage_details": "Delivery box had seven crushed corners and a caved-in top. Espresso machine's stainless-steel body has a significant dent on the right side with sharp edges, indicating potential impact damage during transit.",
+        "user_action_plan": "Michael has decided to contact support immediately to address the damaged espresso machine instead of attempting to use it. Reasons: Avoid voiding warranty, ensure safety, and prevent potential electrical issues or water leaks.",
+        "user_replacement_preference": "Michael prefers a hassle-free replacement process. Avoids complicated steps like multiple photo submissions, mail forms, or slow shipping label delivery. Will provide photos of damage(box condition, dents, bent steam wand) and is open to sending a video if needed."
+    },
+    "archival_memory": {
+        "user_discount_inquiry": "Michael inquired about pricing range, New Customer Discount, bundle deals, and limited-time promos",
+        "user_shipping_concerns": "Michael asked about local warehouse shipping, rain-related delivery challenges in Seattle, and approximate shipping timelines for product arrival before family gathering",
+        "user_preference_stainless_steel_finish": "User prefers stainless-steel finish for kitchen aesthetic, interested in modern design, seeking espresso machine for enhanced taste, temperature control, and caf\u00e9-like experience",
+        "user_intent_purchase_espresso_machine": "User is ready to order an espresso machine, prioritizing stainless-steel finish, modern design, and improved coffee quality over a drip maker",
+        "user_preference_steam_wand": "User requires steam wand for frothing milk to make specialty drinks like cappuccino and strawberry matcha latte",
+        "user_kitchen_counter_space": "38 square feet counter space, may need to relocate toaster oven to accommodate espresso machine"
+    }
+}

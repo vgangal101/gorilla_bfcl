@@ -1,0 +1,14 @@
+{
+    "core_memory": {
+        "next_id": 1,
+        "store": {
+            "0": "Patient shares experience of managing health in mid-50s, noting joint pain and seasonal illnesses due to Kansas winters. Mentions shift in health awareness from younger years to current routine of managing chronic conditions and regular doctor visits."
+        }
+    },
+    "archival_memory": {
+        "next_id": 1,
+        "store": {
+            "0": "Patient underwent gallbladder removal due to severe gallbladder attack with years of prior gallstone issues. Post-surgery, digestion has changed; fried and greasy foods are now restricted. Patient notes the impact of a previously overlooked organ on overall body function."
+        }
+    }
+}

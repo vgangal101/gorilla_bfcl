@@ -1,0 +1,24 @@
+{
+    "core_memory": {
+        "diabetes_management": "Regular monitoring and adjustments based on blood sugar levels, as per doctor's advice.",
+        "inflammatory_markers": "CRP: 3.2 mg/L(elevated, ideal <3.0 mg/L), ESR: 18 mm/hr(normal 0-20 mm/hr). Mild inflammation likely related to osteoarthritis.",
+        "inflammatory_markers_current": "CRP: 3.2 mg/L(elevated, ideal <3.0 mg/L), ESR: 18 mm/hr(normal 0-20 mm/hr). Mild inflammation likely related to osteoarthritis.",
+        "inflammatory_markers_2023_current": "CRP: 3.2 mg/L(elevated, ideal <3.0 mg/L), ESR: 18 mm/hr(normal 0-20 mm/hr). Mild inflammation likely related to osteoarthritis.",
+        "inflammatory_markers_2023_new": "CRP: 3.2 mg/L(elevated, ideal <3.0 mg/L), ESR: 18 mm/hr(normal 0-20 mm/hr). Mild inflammation likely related to osteoarthritis.",
+        "inflammatory_markers_2023_final": "CRP: 3.2 mg/L(elevated, ideal <3.0 mg/L), ESR: 18 mm/hr(normal 0-20 mm/hr). Mild inflammation likely related to osteoarthritis.",
+        "inflammatory_markers_2023_final_final_final_final_update": "CRP: 3.2 mg/L(elevated, ideal <3.0 mg/L), ESR: 18 mm/hr(normal 0-20 mm/hr). Mild inflammation likely related to osteoarthritis."
+    },
+    "archival_memory": {
+        "patient_health_overview": "User is in their mid-50s with a history of surgeries, medications, and chronic conditions. Concerns include joint pain and seasonal illnesses due to Kansas winters. Views health management as a part-time job.",
+        "bloodwork_latest_2023": "Latest bloodwork showed some ups and downs in metrics, but nothing too alarming.",
+        "seasonal_health_impact": "Living in Kansas, seasonal changes affect energy levels and joint pain, requiring lifestyle adjustments.",
+        "bloodwork_details_2023": "Fasting glucose: 135 mg/dL, A1C: 6.9%, hemoglobin A1c: 6.9%. Home monitoring shows morning readings between 125-130 mg/dL. Doctor advised dietary fiber, light exercise after meals, and carb adjustment.",
+        "cholesterol_bloodwork_2023": "Total cholesterol: 195 mg/dL, LDL: 130 mg/dL, HDL: 58 mg/dL, triglycerides: 140 mg/dL. Doctor advised increasing healthy fats and reducing saturated fats.",
+        "blood_pressure_2023": "Blood pressure reading: 138/85 mmHg. Doctor advised target of <130/80 mmHg. Home readings fluctuate between 135-140/80-90 mmHg. Management strategies include sodium reduction, hydration, and stress mitigation.",
+        "vitamin_d_test_2023": "Vitamin D level: 22 ng/mL. Deficient. Doctor prescribed 2,000 IU daily. Retesting scheduled in a few months.",
+        "thyroid_test_2023": "TSH: 2.1 mIU/L, T4: 1.2 ng/dL. Stable levels confirm current levothyroxine dosage is effective.",
+        "bone_density_test_2023": "T-score spine: -1.8 (osteopenia), T-score hip: -1.5 (borderline). Doctor advised strength training and calcium intake. Diet changes: added dairy, leafy greens, and calcium supplement with vitamin K2 for absorption.",
+        "liver_kidney_test_2023": "ALT: 42 U/L(elevated), creatinine: 0.9 mg/dL. Doctor attributes ALT elevation to recent medication changes; kidney function remains normal.",
+        "inflammatory_markers_2023": "CRP: 3.2 mg/L, ESR: 18 mm/hr. Mild inflammation suspected to be related to osteoarthritis."
+    }
+}

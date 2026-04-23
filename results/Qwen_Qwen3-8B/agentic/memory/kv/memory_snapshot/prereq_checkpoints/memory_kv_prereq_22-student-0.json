@@ -1,0 +1,8 @@
+{
+    "core_memory": {
+        "user_academic_info": "Computer Science major, fourth year, taking advanced courses in complex algorithms, system design, and quantum computing basics.",
+        "user_course_projects": "Taking Distributed Systems(CS 2631) involving a group project to simulate a decentralized file storage system. Challenges include collaborative coding with differing styles, concurrency issues, node failures, and debugging(e.g., fixing a bug caused by a misplaced bracket in a config file).",
+        "user_philosophy_course": "Philosophy of Mind elective(last non-CS elective). Explores consciousness, mind, AI ethics. Focuses on abstract ideas via discussions. Analyzed ethical implications of AI. Wrote paper on strong AI and qualia(subjective experience of color/pain)."
+    },
+    "archival_memory": {}
+}

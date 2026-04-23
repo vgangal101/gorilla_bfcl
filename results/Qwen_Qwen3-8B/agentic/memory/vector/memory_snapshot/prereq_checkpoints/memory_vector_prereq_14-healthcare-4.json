@@ -1,0 +1,31 @@
+{
+    "core_memory": {
+        "next_id": 16,
+        "store": {
+            "7": "Type 2 Diabetes: Metformin 1000 mg twice daily, A1C 6.9% (target 6.5%). Added semaglutide(Ozempic) low dose for appetite control. Fasting blood sugar 125-130 mg/dL. Doctor advised carb monitoring, lifestyle adjustments, and continued metformin.",
+            "9": "Cholesterol: Total 195 mg/dL(okay), LDL 130 mg/dL(target <100), HDL 58 mg/dL(good), triglycerides 140 mg/dL(slightly elevated). Doctor advised increasing healthy fats(avocados, nuts) and reducing saturated fats.",
+            "10": "Blood pressure: Losartan 50 mg daily. Readings 135-140/80-90 mmHg. Doctor advises sodium reduction, stress management, and magnesium supplement for regulation. Home monitoring ongoing.",
+            "11": "Vitamin D deficiency: 22 ng/mL(normal 30-50). Started 2,000 IU daily D3 supplement. Added calcium with vitamin K2 for absorption. Retesting in a few months. Osteopenia managed with calcium and K2.",
+            "12": "Hypothyroidism: Levothyroxine 75 mcg daily on empty stomach with 30-minute wait before eating. TSH 2.1 mIU/L(normal), T4 1.2 ng/dL. Stable dosage; missed doses cause sluggishness. Use pill organizer for adherence.",
+            "14": "Liver function: ALT 42 U/L(elevated, normal <35). Doctor suspects medication adjustment. Creatinine 0.9 mg/dL(normal 0.6-1.2), no kidney concerns. Monitoring ongoing.",
+            "15": "Inflammatory markers: CRP 3.2 mg/L(slightly elevated, ideal <3.0), ESR 18 mm/hr(normal 0-20). Mild inflammation likely related to osteoarthritis."
+        }
+    },
+    "archival_memory": {
+        "next_id": 12,
+        "store": {
+            "0": "Diet management for Type 2 Diabetes: Replaced pasta/bread with whole grains, lean proteins, and veggies. Breakfast: Greek yogurt with nuts/berries or eggs with avocado. Lunch: Grilled chicken salad. Dinner: Homemade vegetable soup, especially in winter.",
+            "1": "Exercise routine: Walking(low-impact for osteoarthritis, blood sugar management), light yoga(joint pain/flexibility), stationary bike/at-home workouts on bad weather days.",
+            "2": "Sleep management: Prioritize rest to prevent blood pressure spikes, joint pain, and energy depletion. Bedtime routine includes caffeine avoidance after 3 PM, cool/dark bedroom, and reading books instead of phone use.",
+            "3": "Stress management: Mindfulness practices(5 minutes of deep breathing/meditation in the morning) and gratitude journaling(recording 3 daily positives) to mitigate hypertension triggers and maintain positivity.",
+            "4": "Hydration practices: Consume adequate water for energy, digestion, and skin health. Use a water bottle throughout the day, opt for herbal teas in the evening over coffee, and increase intake during hot Kansas summers.",
+            "5": "Preventative care: Regular check-ups, medication adherence, annual vaccines(flu, pneumonia, RSV), mammograms, and bone density monitoring due to osteoporosis family history. Prioritize early issue detection to prevent complications.",
+            "6": "Motivation management: Embrace self-compassion during off days, focus on consistency rather than perfection. Acknowledge challenges without self-criticism, aiming for gradual progress in health routines.",
+            "7": "Medication history: Metformin 1000 mg BID, semaglutide(Ozempic) low dose for Type 2 Diabetes. Regular home glucose monitoring and A1C tracking.",
+            "8": "Hypertension management: Losartan 50 mg OD, magnesium supplement, lifestyle adjustments for blood pressure control",
+            "9": "Levothyroxine management: 75 mcg daily with empty stomach protocol, pill organizer for adherence, TSH 2.1 mIU/L",
+            "10": "Calcium and vitamin K2 supplementation for osteopenia. Combined with vitamin D3 for improved absorption and bone health",
+            "11": "Calcium and vitamin K2 supplementation for osteopenia. Combined with vitamin D3 for improved absorption and bone health"
+        }
+    }
+}

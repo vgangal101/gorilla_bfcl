@@ -1,0 +1,22 @@
+{
+    "core_memory": {
+        "next_id": 7,
+        "store": {
+            "0": "User is a fourth-year Computer Science major tackling advanced courses like complex algorithms, advanced system design, and quantum computing basics. Feels surreal transitioning from intro classes to higher-level topics. Schedule is busy but positive.",
+            "1": "User's favorite class is Advanced Algorithms, covering dynamic programming and approximation algorithms for NP-hard problems. Professor effectively explains complex concepts, making challenging topics accessible.",
+            "2": "User is enrolled in CS 2631 Distributed Systems, a challenging course involving a group project to simulate decentralized file storage. Collaboration challenges, concurrency issues, node failures, and a resolved bug from a misplaced bracket in a config file.",
+            "3": "User is taking Game Design elective(counts toward major with other classes). Professor from industry with indie game experience. Topics: 2D/3D engines, physics, UX design. Recent project: labyrinth mini-game focusing on difficulty curve balancing to prevent player frustration.",
+            "4": "User enrolled in Quantum Computing course focusing on conceptual understanding with code examples in quantum circuit frameworks. Studying Grover\u2019s and Shor\u2019s algorithms to compare theoretical performance against classical methods.",
+            "5": "User's Capstone Project focuses on ML-driven social media sentiment analysis for emergency response, integrating database management, API development, front-end interfaces, and ML pipelines. Project management includes Scrum Master role and agile methodologies.",
+            "6": "User taking Philosophy of Mind elective, exploring consciousness, mind, and AI ethics. Discusses abstract ideas, ethical implications of AI, and paper on strong AI's ability to experience qualia. Balances technical knowledge with philosophical analysis."
+        }
+    },
+    "archival_memory": {
+        "next_id": 3,
+        "store": {
+            "0": "User's weekly schedule: Mondays/Wednesdays: Advanced Algorithms, Distributed Systems, Capstone meetings. Tuesdays/Thursdays: Quantum Computing, Game Design, Philosophy of Mind. Fridays: assignments/research. Undergrad research in data visualization for scientific datasets.",
+            "1": "User discusses balancing group projects: Capstone requires ~10h/week, Distributed Systems project with weekly meetings and Slack/Discord coordination. Challenges include scheduling 5 people and managing academic project pressures.",
+            "2": "User reflects on academic growth, confidence in problem-solving and time management, and the rewarding nature of challenging courses. Emphasizes skills building for future career despite late nights and project pressures."
+        }
+    }
+}

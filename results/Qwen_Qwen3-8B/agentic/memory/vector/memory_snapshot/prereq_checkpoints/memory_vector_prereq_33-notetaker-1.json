@@ -1,0 +1,18 @@
+{
+    "core_memory": {
+        "next_id": 28,
+        "store": {
+            "15": "Finish security compliance training module.",
+            "16": "Finalize quarterly budget.",
+            "17": "Review vendor contract before signing.",
+            "18": "Finish security compliance training module.",
+            "25": "Schedule dentist appointment.",
+            "26": "Stick to gym 3x this week.",
+            "27": "Call mom\u2014it\u2019s been a while."
+        }
+    },
+    "archival_memory": {
+        "next_id": 0,
+        "store": {}
+    }
+}

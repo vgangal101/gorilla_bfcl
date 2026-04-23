@@ -1,0 +1,16 @@
+{
+    "core_memory": {
+        "user_grinder_spec_interest": "Michael is interested in details about the new electric grinder: burr type(conical preferred), grind-size range, noise levels, ease of cleaning, and aesthetic matching stainless-steel espresso machine. Avoids clunky/plasticky designs.",
+        "user_subscription_service_inquiry": "Michael asked about potential coffee bean subscription service pairing with grinder settings. Interested in recommended roasts for espresso/drip/pour-over. Trusts company's taste based on espresso machine experience.",
+        "user_intention_to_purchase_grinder": "Michael has already purchased the new electric grinder and related accessories. Interested in matching accessories like $39 storage canister and specialized cleaning kit for espresso machine and grinder.",
+        "user_coffee_corner_preparedness": "Michael has transformed his kitchen counter into a 'coffee lab' with upgraded equipment including a digital scale(collaborated with Garmin) and vacuum-sealed coffee canisters."
+    },
+    "archival_memory": {
+        "user_discount_inquiry": "Michael inquired about pricing range, New Customer Discount, bundle deals, and limited-time promos",
+        "user_shipping_concerns": "Michael asked about local warehouse shipping, rain-related delivery challenges in Seattle, and approximate shipping timelines for product arrival before family gathering",
+        "user_preference_stainless_steel_finish": "User prefers stainless-steel finish for kitchen aesthetic, interested in modern design, seeking espresso machine for enhanced taste, temperature control, and caf\u00e9-like experience",
+        "user_intent_purchase_espresso_machine": "User is ready to order an espresso machine, prioritizing stainless-steel finish, modern design, and improved coffee quality over a drip maker",
+        "user_preference_steam_wand": "User requires steam wand for frothing milk to make specialty drinks like cappuccino and strawberry matcha latte",
+        "user_kitchen_counter_space": "38 square feet counter space, may need to relocate toaster oven to accommodate espresso machine"
+    }
+}

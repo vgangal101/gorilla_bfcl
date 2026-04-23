@@ -1,0 +1,33 @@
+{
+    "core_memory": {
+        "next_id": 2,
+        "store": {
+            "0": "Patient shares ongoing management of diabetes and hypertension, with regular bloodwork check-ups. Notes that seasonal changes in Kansas impact energy levels and joint pain, prompting adjustments in lifestyle and monitoring of health metrics.",
+            "1": "Most recent fasting blood glucose test result: 135 mg/dL(above ideal target of under 100 mg/dL). A1C result: 6.9% (above target range of 6.5%), indicating need for increased dietary fiber and light post-meal exercise. Morning home blood sugar readings consistently around 125-130 mg/dL."
+        }
+    },
+    "archival_memory": {
+        "next_id": 19,
+        "store": {
+            "0": "Patient underwent gallbladder removal due to severe gallbladder attack with years of prior gallstone issues. Post-surgery, digestion has changed; fried and greasy foods are now restricted. Patient notes the impact of a previously overlooked organ on overall body function.",
+            "1": "Patient reflects on aging in mid-50s, experiencing joint pain, seasonal illnesses due to Kansas winters, and increased awareness of health management. Emphasizes intentional routines to maintain strength and independence.",
+            "2": "Patient notes slowed metabolism in mid-50s, transitioning from unrestricted eating to mindful dietary choices. Emphasizes protein, healthy fats, and fiber to support digestion and reduce inflammation. Avoids processed foods. Favorite meal: grilled salmon with roasted vegetables for its anti-inflammatory benefits and nutritional value.",
+            "3": "Patient incorporates daily walking regardless of weather and light strength training with weights and resistance bands a few times a week to combat muscle loss, improve balance, and support joint health. Emphasizes consistency over intensity in exercise routines, aligning with doctor's advice on age-related muscle decline and injury prevention.",
+            "4": "Patient prioritizes sleep, aiming for seven to eight hours with improved sleep hygiene: no screens before bed, cool and dark room, consistent schedule. Started taking magnesium supplements for relaxation, noting significant improvement in daily well-being.",
+            "5": "Patient addresses skin health with daily SPF use, even in winter, increased water intake to combat dryness, and nightly retinol cream for maintaining skin health and appearance without aiming to look 30 again.",
+            "6": "Patient emphasizes social connections as vital for mental well-being, making a point to have coffee with friends weekly and joined a book club to stay engaged and meet new people, believing social activity helps maintain youthfulness.",
+            "7": "Patient addresses memory concerns with more 'where did I put my keys?' moments, actively maintaining brain sharpness through puzzles, reading, and learning new skills. Started an online art history class for fun, viewing it as a mental exercise that helps prevent cognitive decline.",
+            "8": "Patient manages chronic pain from osteoarthritis, which worsens in colder months, using warm baths with Epsom salts and heating pads in the mornings. Following doctor's recommendation, exploring tai chi and gentle stretching as part of a routine to manage discomfort while maintaining independence and ability to engage in beloved activities.",
+            "9": "Patient embraces aging as a chapter filled with wisdom, learning to listen to the body, prioritize self-care, and appreciate the small joys. Would advise younger self to not stress over minor issues, take care of health early, and enjoy every stage of life\u2014aging is not to be feared but seen as a natural and valuable part of life.",
+            "10": "Patient shares ongoing management of diabetes and hypertension, with regular bloodwork check-ups. Notes that seasonal changes in Kansas impact energy levels and joint pain, prompting adjustments in lifestyle and monitoring of health metrics.",
+            "11": "Most recent fasting blood glucose test result: 135 mg/dL(above ideal target of under 100 mg/dL). A1C result: 6.9% (above target range of 6.5%), indicating need for increased dietary fiber and light post-meal exercise. Morning home blood sugar readings consistently around 125-130 mg/dL.",
+            "12": "Cholesterol results: Total cholesterol 195 mg/dL(acceptable), LDL 130 mg/dL(above recommended under 100 mg/dL), HDL 58 mg/dL(in good range), triglycerides 140 mg/dL(slightly elevated). Doctor advised increasing intake of healthy fats(avocados, nuts) and reducing saturated fats.",
+            "13": "Blood pressure reading at last check-up: 138/85 mmHg(on the high side). Target goal set by doctor: below 130/80 mmHg. Home readings fluctuate between 135-140 systolic and 80-90 diastolic, influenced by stress and salt intake. Patient is reducing sodium intake and increasing water consumption, which appears to help.",
+            "14": "Vitamin D levels: 22 ng/mL(deficient; normal range is 30-50 ng/mL). Doctor prescribed 2,000 IU daily supplement. Patient will be retested in a few months to assess improvement.",
+            "15": "Thyroid results: TSH 2.1 mIU/L(within normal range of 0.5-4.5 mIU/L), T4 1.2 ng/dL(normal). Patient has a history of hypothyroidism and confirms regular monitoring of thyroid function. Current levothyroxine dosage is working well.",
+            "16": "Bone density scan results: Spine T-score of -1.8 (osteopenia), Hip T-score of -1.5 (borderline). Doctor advised maintaining strength training and increasing calcium intake to prevent further bone loss. Patient has started incorporating more dairy and leafy greens into diet, and now takes a calcium supplement with vitamin K2 to enhance absorption.",
+            "17": "Liver and kidney function tests: ALT level elevated at 42 U/L(normal is under 35 U/L), possibly linked to recent medication adjustments. Creatinine level at 0.9 mg/dL(within normal range of 0.6-1.2 mg/dL), indicating no kidney function concerns. Doctor recommends continued monitoring of ALT levels.",
+            "18": "Inflammatory markers: C-reactive protein(CRP) at 3.2 mg/L(slightly elevated; ideal under 3.0 mg/L), indicating mild inflammation likely related to osteoarthritis. ESR at 18 mm/hr(within normal range of 0-20 mm/hr), suggesting no significant inflammation."
+        }
+    }
+}
