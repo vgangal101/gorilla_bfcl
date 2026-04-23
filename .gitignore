@@ -23,7 +23,7 @@ goex/docker/misc/images.json
 berkeley-function-call-leaderboard/result/
 
 # Ignore leaderboard score
-berkeley-function-call-leaderboard/score/
+# berkeley-function-call-leaderboard/score/
 
 # Ignore environment variables
 berkeley-function-call-leaderboard/.env
