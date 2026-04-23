@@ -194,7 +194,7 @@ class OpenAICompatLLM(LLMInterface):
                 "Install it with `pip install openai`."
             ) from e
 
-        self.client = OpenAI(base_url=base_url, api_key=api_key or "EMPTY")
+        self.client = OpenAI(base_url=base_url, api_key=api_key or "EMPTY", timeout=1800.0)
         self.model = model
         self.temperature = temperature
 
