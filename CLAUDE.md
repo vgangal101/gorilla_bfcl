@@ -107,3 +107,26 @@ KV-cache tuning (if a run OOMs or stalls — e.g. long multi-turn / agentic traj
 - `VLLM_GPU_MEMORY_UTILIZATION` — default 0.85; push to 0.92 to squeeze more KV out of HBM before adding HPUs.
 - `BFCL_NUM_THREADS` — lowering concurrency reduces in-flight sequences, which reduces KV pressure.
 - HPU count / TP — bump `hpus` + `tp` for the affected model in `generate_bfcl_scripts.py` (not the `.slurm` — it's regenerated) and re-run `python3 sol_gaudi/generate_bfcl_scripts.py`. Per-HPU HBM is 96 GB; qwen3_32b at TP=4 already gets 384 GB total (~260 GB KV budget after weights), ~3× what 2×A100-80G offers.
+
+## LLM-Modulo path (branch: LLM-Modulo_gaudi)
+
+Merges `main` (Gaudi plumbing) + `LLM-Modulo_agent` (the Generate-Test-Critique runner in `llm_modulo_bfcl/`). Runner entry: `berkeley-function-call-leaderboard/run_bfcl_llm_modulo.py`.
+
+Lifecycle mirrors baseline — same `sol_gaudi/manage_bfcl_gaudi.sh` wrapper, same per-model SBATCH generator — plus:
+- `sol_gaudi/submit_modulo_sweep.sh` — fires 8B/14B/32B jobs in one go (defaults to `configs/modulo_full.yaml`; override with `MODELS=...` or `MODULO_CONFIG=...`).
+- `sol_gaudi/quickstart.sh modulo` — smoke-test entrypoint (submits `qwen3_4b_modulo` on `configs/smoketest.yaml`).
+- Model targets live in `MODULO_MODELS` in `sol_gaudi/generate_bfcl_scripts.py`. **4B is excluded** from the modulo sweep: the only Qwen3-4B variant BFCL registers is `Qwen3-4B-Instruct-2507`, which is the non-thinking specialist; thinking-mode prompts regress hard on it. Use 8B/14B/32B.
+
+Gotchas burned through so far (don't repeat them):
+
+1. **`<think>` in Qwen3 output** — hybrid 8B/14B/32B prepend a `<think>…</think>` block before the JSON plan. The modulo `ProposalParser` in `llm_modulo_bfcl/parser.py` strips it via `_THINK_RE` before `json.loads`. If you ever see every sample scoring 0% with `model_result_raw: "[]"`, that regex regressed — fix `parser.py:14` before blaming the model.
+2. **Category name vs. data-file mismatch** — `ALLOWED_CATEGORIES` in `run_bfcl_llm_modulo.py` is hand-maintained. BFCL v4 has no `BFCL_v4_simple.json` (split into `simple_python` / `_java` / `_javascript`), so listing `simple` anywhere — in the yaml **or** in `ALLOWED_CATEGORIES` — crashes on the first category with `FileNotFoundError`, after vLLM has already loaded (wastes ~2 min of HPU time per job). The failure goes to `.err`; `.out` just shows "Stopping vLLM server" which looks like a clean exit. Cross-check any new category against `ls berkeley-function-call-leaderboard/bfcl_eval/data/`.
+3. **`allow_overwrite: false`** (default in both configs) — if `result_modulo/<Model>/non_live/*.json` exists from a previous run, the runner raises `FileExistsError` right after the config echo. Either `rm -rf result_modulo/<Model>` before resubmitting, or flip `allow_overwrite: true` in the yaml.
+4. **Score-dir contamination** — `bfcl evaluate` writes `score/<Model>/` keyed on model name, not run type. A modulo partial-eval over `simple_python` coexists with baseline scores from `agentic/`, `live/`, `multi_turn/`, other `non_live/` categories in the same dir. When bundling modulo results to share, tar only `result_modulo/<Model>` + the specific `score/<Model>/<group>/BFCL_v4_<category>_score.json` files the modulo run produced. Don't send the whole `score/<Model>/` dir.
+5. **Aggregator `KeyError` on stale score dirs** — `generate_leaderboard_csv` iterates over everything under `score/` and explodes on orphan dirs from prior experiments (e.g. `Qwen_Qwen3-*.pre_nothink/`). The eval files land fine, but the aggregation step dies. Clean up stale `score/<Model>.*` dirs before running eval.
+
+Config files:
+- `berkeley-function-call-leaderboard/configs/smoketest.yaml` — 10 samples on `simple_python`, `max_iters=2`, `allow_overwrite: true`, `result_dir: result_modulo_smoke` (note: the runner currently ignores this override and writes to `result_modulo/` — minor bug, not blocking).
+- `berkeley-function-call-leaderboard/configs/modulo_full.yaml` — 10 AST categories (`simple` dropped in commit `ed8bc9a`), `max_iters=5`, all 5 critics, `temperature: 0.6`.
+
+Current sweep state (as of 2026-04-23): 8B/14B/32B submitted on `configs/modulo_full.yaml` after the `simple`-category fix. Check status with `squeue -u $USER`, tail logs under `sol_gaudi/logs/bfcl_qwen3_*_modulo_<jobid>.{out,err}`. 24h walls per job.
