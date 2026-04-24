@@ -136,10 +136,14 @@ Re-submitted 8B/14B/32B on `configs/modulo_full.yaml` after fixing two issues th
 - `8fb0541 llm_modulo: drop temperature 0.6 -> 0.001 to match BFCL baseline` — the 0.6 "Qwen thinking-mode recommendation" was the main driver of the previous ~3.55pp regression vs baseline on 32B. Baseline ran at BFCL's CLI default of 0.001 with thinking ON and got 86-96% on single-turn AST without collapse, so the comment warning about 0.001 repetition collapse did not apply to this workload.
 - `6e1c8de llm_modulo: set 30-min OpenAI client timeout to survive 32B generation` — previous 32B job hit one `APITimeoutError` on a single sample (default httpx timeout too short). Impact was ~0.04% of samples, not the main accuracy issue, but worth fixing.
 
-Jobs:
-- qwen3_8b_modulo  → job **51800071**
-- qwen3_14b_modulo → job **51800073**
-- qwen3_32b_modulo → job **51800075**
+Modulo jobs submitted 2026-04-23 evening (via `submit_modulo_sweep.sh`, auto-clean of `result_modulo/<Model>/` worked on submit):
+- qwen3_8b_modulo  → job **51803356**
+- qwen3_14b_modulo → job **51803357**
+- qwen3_32b_modulo → job **51803358**
+
+(Superseded prior jobs 51800071/73/75 — those were submitted earlier the same evening before the `submit_modulo_sweep.sh` resubmit. Cancel those if they're still in the queue to avoid running twice.)
+
+Baseline jobs (on `bfcl_gaudi` branch) are run separately by the coworker — see `sol_gaudi/tar_results.sh` for bundling both sweeps' artifacts when done.
 
 Logs at `sol_gaudi/logs/bfcl_qwen3_{8b,14b,32b}_modulo_<jobid>.{out,err}`. 24h walltimes.
 
