@@ -14,6 +14,16 @@ GREEN='\033[0;32m'; BLUE='\033[0;34m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC
 MODELS=(qwen3_4b qwen3_8b qwen3_14b qwen3_32b gemma4_31b
         qwen3_4b_modulo qwen3_8b_modulo qwen3_14b_modulo qwen3_32b_modulo)
 
+# Modulo model key -> BFCL result_modulo dir name. Used by the auto-clean
+# step in submit_one. Only modulo variants are listed; baseline submissions
+# on this branch are unusual and not auto-cleaned.
+declare -A MODULO_DIRS=(
+    [qwen3_4b_modulo]="Qwen_Qwen3-4B-Instruct-2507"
+    [qwen3_8b_modulo]="Qwen_Qwen3-8B"
+    [qwen3_14b_modulo]="Qwen_Qwen3-14B"
+    [qwen3_32b_modulo]="Qwen_Qwen3-32B"
+)
+
 print_usage() {
     cat <<EOF
 Usage: ./sol_gaudi/manage_bfcl_gaudi.sh [COMMAND] [ARGS]
@@ -30,10 +40,13 @@ Commands:
     help                  This message
 
 Environment overrides:
-    BFCL_TEST_CATEGORY    Override test categories per submission (bfcl runs only)
-    BFCL_NUM_THREADS      Override num-threads per submission (bfcl runs only)
-    MODULO_CONFIG         Override LLM-Modulo config YAML path (modulo runs only)
-    MODULO_RESULT_DIR     Override LLM-Modulo result dir (default: result_modulo)
+    BFCL_TEST_CATEGORY       Override test categories per submission (bfcl runs only)
+    BFCL_NUM_THREADS         Override num-threads per submission (bfcl runs only)
+    MODULO_CONFIG            Override LLM-Modulo config YAML path (modulo runs only)
+    MODULO_RESULT_DIR        Override LLM-Modulo result dir (default: result_modulo)
+    BFCL_KEEP_OLD_RESULTS=1  Skip the auto-clean of result_modulo/<Model> before
+                             modulo submit (default: clean). Does not touch
+                             score/<Model> since it is shared with baseline runs.
 
 Examples:
     ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_4b
@@ -74,6 +87,21 @@ submit_one() {
         return 1
     fi
     mkdir -p "${LOGS_DIR}"
+
+    # Auto-clean stale result_modulo/<Model>/ before a modulo re-run (gotcha #3
+    # — allow_overwrite: false otherwise raises FileExistsError). score/<Model>/
+    # is intentionally NOT cleaned here: per gotcha #4 it is shared with
+    # baseline runs and wiping it would destroy baseline scores.
+    # Opt out with BFCL_KEEP_OLD_RESULTS=1.
+    if [[ "${model}" == *_modulo && "${BFCL_KEEP_OLD_RESULTS:-0}" != "1" ]]; then
+        local modulo_dir="${MODULO_DIRS[${model}]:-}"
+        local target_root="${BFCL_ROOT}/${MODULO_RESULT_DIR:-result_modulo}"
+        if [[ -n "${modulo_dir}" && -d "${target_root}/${modulo_dir}" ]]; then
+            echo -e "${YELLOW}  clean: rm -rf ${target_root}/${modulo_dir}${NC}"
+            rm -rf "${target_root}/${modulo_dir}"
+        fi
+    fi
+
     if [[ "${model}" == *_modulo ]]; then
         echo -e "${BLUE}Submitting ${model}${NC} (config=${MODULO_CONFIG:-<from .slurm default>} result-dir=${MODULO_RESULT_DIR:-result_modulo})"
     else
