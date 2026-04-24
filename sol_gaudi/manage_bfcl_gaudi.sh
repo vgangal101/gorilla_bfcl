@@ -13,6 +13,13 @@ GREEN='\033[0;32m'; BLUE='\033[0;34m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC
 
 MODELS=(qwen3_8b qwen3_14b qwen3_32b)
 
+# Model key -> BFCL result/score dir name (HF id with slash -> underscore)
+declare -A MODEL_DIRS=(
+    [qwen3_8b]="Qwen_Qwen3-8B"
+    [qwen3_14b]="Qwen_Qwen3-14B"
+    [qwen3_32b]="Qwen_Qwen3-32B"
+)
+
 print_usage() {
     cat <<EOF
 Usage: ./sol_gaudi/manage_bfcl_gaudi.sh [COMMAND] [ARGS]
@@ -29,12 +36,15 @@ Commands:
     help                  This message
 
 Environment overrides:
-    BFCL_TEST_CATEGORY    Override test categories per submission
-    BFCL_NUM_THREADS      Override num-threads per submission
+    BFCL_TEST_CATEGORY       Override test categories per submission
+    BFCL_NUM_THREADS         Override num-threads per submission
+    BFCL_KEEP_OLD_RESULTS=1  Skip the auto-clean of result/<Model> and
+                             score/<Model> before submit (default: clean)
 
 Examples:
-    ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_4b
+    ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_8b
     BFCL_TEST_CATEGORY=all_scoring ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_32b
+    BFCL_KEEP_OLD_RESULTS=1 ./sol_gaudi/manage_bfcl_gaudi.sh submit qwen3_14b
     ./sol_gaudi/manage_bfcl_gaudi.sh submit-all
     ./sol_gaudi/manage_bfcl_gaudi.sh status
     ./sol_gaudi/manage_bfcl_gaudi.sh logs 12345
@@ -69,6 +79,21 @@ submit_one() {
         return 1
     fi
     mkdir -p "${LOGS_DIR}"
+
+    # Auto-clean stale result/<Model> and score/<Model> so a re-run doesn't
+    # coexist with last run's output (gotcha #5 aggregator KeyError, plus
+    # bfcl generate's FileExistsError when --allow-overwrite isn't set).
+    # Opt out with BFCL_KEEP_OLD_RESULTS=1.
+    local model_dir="${MODEL_DIRS[${model}]:-}"
+    if [[ -n "${model_dir}" && "${BFCL_KEEP_OLD_RESULTS:-0}" != "1" ]]; then
+        for d in "${BFCL_ROOT}/result/${model_dir}" "${BFCL_ROOT}/score/${model_dir}"; do
+            if [[ -d "${d}" ]]; then
+                echo -e "${YELLOW}  clean: rm -rf ${d}${NC}"
+                rm -rf "${d}"
+            fi
+        done
+    fi
+
     echo -e "${BLUE}Submitting ${model}${NC} (test-category=${BFCL_TEST_CATEGORY})"
     local job_id
     job_id=$(BFCL_TEST_CATEGORY="${BFCL_TEST_CATEGORY}" \
