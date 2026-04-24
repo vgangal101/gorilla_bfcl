@@ -17,12 +17,13 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 SLURM_DIR = SCRIPT_DIR / "slurm"
 
 # model_key -> (hf_id, hpus, tp, cpus, mem, time)
+# Walltimes bumped for thinking-mode output headroom (Qwen3 emits <think>
+# blocks that inflate response length; 0340576's 8h wall was for the
+# thinking-disabled config).
 MODELS: dict[str, tuple[str, int, int, int, str, str]] = {
-    "qwen3_4b":    ("Qwen/Qwen3-4B-Instruct-2507", 1, 1, 24, "160G", "06:00:00"),
-    "qwen3_8b":    ("Qwen/Qwen3-8B",       1, 1, 24, "160G", "08:00:00"),
-    "qwen3_14b":   ("Qwen/Qwen3-14B",      2, 2, 32, "200G", "10:00:00"),
-    "qwen3_32b":   ("Qwen/Qwen3-32B",      4, 4, 60, "384G", "12:00:00"),
-    "gemma4_31b":  ("google/gemma-4-31B-it", 4, 4, 60, "384G", "12:00:00"),
+    "qwen3_8b":    ("Qwen/Qwen3-8B",       1, 1, 24, "160G", "16:00:00"),
+    "qwen3_14b":   ("Qwen/Qwen3-14B",      2, 2, 32, "200G", "20:00:00"),
+    "qwen3_32b":   ("Qwen/Qwen3-32B",      4, 4, 60, "384G", "24:00:00"),
 }
 
 TEMPLATE = r"""#!/bin/bash
