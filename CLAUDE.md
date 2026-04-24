@@ -127,6 +127,24 @@ Gotchas burned through so far (don't repeat them):
 
 Config files:
 - `berkeley-function-call-leaderboard/configs/smoketest.yaml` — 10 samples on `simple_python`, `max_iters=2`, `allow_overwrite: true`, `result_dir: result_modulo_smoke` (note: the runner currently ignores this override and writes to `result_modulo/` — minor bug, not blocking).
-- `berkeley-function-call-leaderboard/configs/modulo_full.yaml` — 10 AST categories (`simple` dropped in commit `ed8bc9a`), `max_iters=5`, all 5 critics, `temperature: 0.6`.
+- `berkeley-function-call-leaderboard/configs/modulo_full.yaml` — 10 AST categories (`simple` dropped in commit `ed8bc9a`), `max_iters=5`, all 5 critics, `temperature: 0.001` (was 0.6 — lowered 2026-04-23 to match baseline).
 
-Current sweep state (as of 2026-04-23): 8B/14B/32B submitted on `configs/modulo_full.yaml` after the `simple`-category fix. Check status with `squeue -u $USER`, tail logs under `sol_gaudi/logs/bfcl_qwen3_*_modulo_<jobid>.{out,err}`. 24h walls per job.
+### Current sweep state (as of 2026-04-23 evening)
+
+Re-submitted 8B/14B/32B on `configs/modulo_full.yaml` after fixing two issues that made the Apr 23 morning run diverge from baseline:
+
+- `8fb0541 llm_modulo: drop temperature 0.6 -> 0.001 to match BFCL baseline` — the 0.6 "Qwen thinking-mode recommendation" was the main driver of the previous ~3.55pp regression vs baseline on 32B. Baseline ran at BFCL's CLI default of 0.001 with thinking ON and got 86-96% on single-turn AST without collapse, so the comment warning about 0.001 repetition collapse did not apply to this workload.
+- `6e1c8de llm_modulo: set 30-min OpenAI client timeout to survive 32B generation` — previous 32B job hit one `APITimeoutError` on a single sample (default httpx timeout too short). Impact was ~0.04% of samples, not the main accuracy issue, but worth fixing.
+
+Jobs:
+- qwen3_8b_modulo  → job **51800071**
+- qwen3_14b_modulo → job **51800073**
+- qwen3_32b_modulo → job **51800075**
+
+Logs at `sol_gaudi/logs/bfcl_qwen3_{8b,14b,32b}_modulo_<jobid>.{out,err}`. 24h walltimes.
+
+Previous Apr 23 morning run (temperature=0.6, pre-fix) for reference — `simple_java` dropped −22pp on 14B and −15pp on 32B vs baseline; 32B aggregate was 82.37% vs baseline 85.92%. If this re-run lands within ±2pp of baseline, the code-path difference between modulo's `OpenAICompatLLM` (→ vLLM /v1/chat/completions, native Qwen3 template) and baseline's `QwenHandler._format_prompt` (→ vLLM /v1/completions, BFCL-built template) is immaterial and no refactor is needed. If 3pp+ gap persists, next step is rewriting `OpenAICompatLLM` in `run_bfcl_llm_modulo.py:187-210` to route through `QwenHandler`.
+
+Branch settings audit (2026-04-23) — these **cannot** be cleanly unified without rework:
+- `bfcl_gaudi` HEAD has `0340576` which adds empty `<think></think>` prefill → thinking OFF. The Apr 19 baseline tarball (scores in `~/Downloads/bfcl_qwen3_14b_32b/`) was generated *before* `0340576` → thinking ON. Re-running `bfcl generate` on `bfcl_gaudi` HEAD today will NOT reproduce those baseline numbers.
+- `LLM-Modulo_gaudi` has `_THINKING_TEMPERATURE = 0.6` hardcoded in `QwenHandler`/`QwenFCHandler` (commit `5e6b9f6`). This override only bites if anyone runs `bfcl generate` from the modulo branch — not modulo runs themselves (which go through `OpenAICompatLLM`). Don't remove it without confirming no baseline `bfcl generate` runs are happening on this branch.
