@@ -13,6 +13,7 @@ HARD_CRITICS: set[str] = {
     "ArgumentValueCritic",
     "DependencyCritic",
     "ExecutionCritic",
+    "LanguageASTCritic",
 }
 
 SOFT_CRITICS: set[str] = {

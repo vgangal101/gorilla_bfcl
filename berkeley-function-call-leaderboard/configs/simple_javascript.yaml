@@ -16,6 +16,10 @@ modulo:
     - ArgumentSchemaCritic
     - ArgumentValueCritic
     - DependencyCritic
+    # Reuses BFCL's own AST decoder on the rendered call-string. Same role
+    # as in simple_java.yaml: catch any plan whose JS rendering BFCL won't
+    # decode at eval time.
+    - LanguageASTCritic
     - RedundancyCritic
 
 output:

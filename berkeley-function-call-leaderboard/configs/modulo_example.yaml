@@ -40,6 +40,11 @@ modulo:
     - ArgumentSchemaCritic
     - ArgumentValueCritic
     - DependencyCritic
+    # LanguageASTCritic runs BFCL's own per-language AST decoder on the
+    # rendered call-string. Especially load-bearing for simple_java /
+    # simple_javascript (the language-aware serializer fix landed there
+    # to close a -20pp Java regression vs the plain-agent baseline).
+    - LanguageASTCritic
     - RedundancyCritic   # soft; surfaces duplicate calls without blocking
 
 # --- output -------------------------------------------------------------

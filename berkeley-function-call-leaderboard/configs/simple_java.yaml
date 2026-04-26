@@ -16,6 +16,13 @@ modulo:
     - ArgumentSchemaCritic
     - ArgumentValueCritic
     - DependencyCritic
+    # Reuses BFCL's own AST decoder on the rendered call-string. Especially
+    # load-bearing here — before the language-aware serializer landed, Java
+    # regressed -20pp vs the plain-agent baseline because the Python
+    # `repr()`-based renderer emitted `True`/`False` and Python dict
+    # literals that the Java decoder rejects. Critic is a safety net for
+    # any residual unforeseen rendering edge cases.
+    - LanguageASTCritic
     - RedundancyCritic
 
 output:

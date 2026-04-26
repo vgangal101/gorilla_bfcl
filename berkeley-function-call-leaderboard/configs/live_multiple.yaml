@@ -16,6 +16,10 @@ modulo:
     - ArgumentSchemaCritic
     - ArgumentValueCritic
     - DependencyCritic
+    # Defense-in-depth: validates the rendered call-string against BFCL's
+    # own Python AST decoder. Almost always a no-op for Python categories
+    # but cheap and guards against renderer regressions.
+    - LanguageASTCritic
     - RedundancyCritic
 
 output:

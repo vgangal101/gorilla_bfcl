@@ -18,6 +18,7 @@ def run_llm_modulo(
     meta_controller,
     parser,
     max_iters: int = MAX_ITERATIONS,
+    extra_context: dict | None = None,
 ) -> dict:
     """Run the LLM-Modulo loop and return a result dict.
 
@@ -58,6 +59,8 @@ def run_llm_modulo(
                 "function_schemas": function_schemas,
                 "history": history,
             }
+            if extra_context:
+                context.update(extra_context)
             results = [c.evaluate(plan, context) for c in critics]
 
         # -- Acceptance check ------------------------------------------
