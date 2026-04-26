@@ -1,5 +1,5 @@
 # Run LLM-Modulo against the `simple_java` BFCL category.
-# Invoke: python run_bfcl_modulo.py --config configs/simple_java.yaml
+# Invoke: python run_bfcl_llm_modulo.py --config configs/simple_java.yaml
 
 model: Qwen/Qwen3-14B
 endpoint: null
@@ -18,7 +18,3 @@ modulo:
     - DependencyCritic
     - RedundancyCritic
 
-output:
-  result_dir: result_modulo
-  num_samples: null
-  allow_overwrite: false

@@ -1,6 +1,6 @@
 # Run LLM-Modulo against the `multi_turn_miss_func` BFCL category.
 #
-# NOT YET SUPPORTED by run_bfcl_modulo.py v1 — multi-turn categories
+# NOT YET SUPPORTED by run_bfcl_llm_modulo.py v1 — multi-turn categories
 # require per-turn state and conversation-history handling that the
 # single-shot modulo loop doesn't implement. `miss_func` specifically
 # tests behavior when the expected function is absent from the schema.
@@ -23,7 +23,3 @@ modulo:
     - DependencyCritic
     - RedundancyCritic
 
-output:
-  result_dir: result_modulo
-  num_samples: null
-  allow_overwrite: false

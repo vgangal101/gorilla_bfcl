@@ -1,6 +1,6 @@
 # Run LLM-Modulo against the `irrelevance` BFCL category.
 #
-# NOT YET SUPPORTED by run_bfcl_modulo.py v1 — irrelevance is a binary
+# NOT YET SUPPORTED by run_bfcl_llm_modulo.py v1 — irrelevance is a binary
 # classification task ("should the model call a tool at all?"), not
 # call-plan construction, so the critic bank doesn't apply directly.
 # Scaffold only; runner will exit(2) until category-specific logic lands.
@@ -22,7 +22,3 @@ modulo:
     - DependencyCritic
     - RedundancyCritic
 
-output:
-  result_dir: result_modulo
-  num_samples: null
-  allow_overwrite: false

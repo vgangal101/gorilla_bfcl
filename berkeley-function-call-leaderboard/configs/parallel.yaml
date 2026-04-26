@@ -1,5 +1,5 @@
 # Run LLM-Modulo against the `parallel` BFCL category.
-# Invoke: python run_bfcl_modulo.py --config configs/parallel.yaml
+# Invoke: python run_bfcl_llm_modulo.py --config configs/parallel.yaml
 
 model: Qwen/Qwen3-14B
 endpoint: null
@@ -18,7 +18,3 @@ modulo:
     - DependencyCritic
     - RedundancyCritic
 
-output:
-  result_dir: result_modulo
-  num_samples: null
-  allow_overwrite: false

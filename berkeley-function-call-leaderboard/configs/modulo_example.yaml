@@ -1,7 +1,7 @@
-# Example config for run_bfcl_modulo.py
+# Example config for run_bfcl_llm_modulo.py
 #
 # Usage:
-#   python run_bfcl_modulo.py --config configs/modulo_example.yaml
+#   python run_bfcl_llm_modulo.py --config configs/modulo_example.yaml
 #
 # Any CLI flag passed to the script (e.g. --model, --num-samples) will
 # override the corresponding setting below.
@@ -43,9 +43,15 @@ modulo:
     - RedundancyCritic   # soft; surfaces duplicate calls without blocking
 
 # --- output -------------------------------------------------------------
+# If `result_dir` is unset, the runner auto-derives a descriptive name
+#   results_llm_modulo_<model>_iters<N>_temp<T>_critics<K>[_<experiment_tag>]
+# so different sweeps don't overwrite each other. Pin it explicitly (below)
+# only if you need a specific path to feed into `bfcl evaluate --result-dir`.
+#
+# experiment_tag is a short label appended to the auto-derived name, e.g.
+# "baseline" vs "diversified" — pick whatever makes the comparison obvious.
+experiment_tag: null
 output:
-  # Write to a dedicated dir so a baseline `run_bfcl_generate.py` run and
-  # this modulo run can be scored side-by-side with `bfcl evaluate`.
-  result_dir: result_modulo
+  # result_dir: results_llm_modulo_custom   # uncomment to pin explicitly
   num_samples: null       # e.g. 20 to smoke-test quickly
   allow_overwrite: false

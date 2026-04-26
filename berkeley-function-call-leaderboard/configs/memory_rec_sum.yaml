@@ -1,6 +1,6 @@
 # Run LLM-Modulo against the `memory_rec_sum` BFCL category.
 #
-# NOT YET SUPPORTED by run_bfcl_modulo.py v1 — memory categories need
+# NOT YET SUPPORTED by run_bfcl_llm_modulo.py v1 — memory categories need
 # an agentic retrieval loop (backend: recursive summarization) plus
 # turn state that the single-shot modulo runner doesn't wire up.
 # Scaffold only; runner will exit(2) until agentic/memory support lands.
@@ -22,7 +22,3 @@ modulo:
     - DependencyCritic
     - RedundancyCritic
 
-output:
-  result_dir: result_modulo
-  num_samples: null
-  allow_overwrite: false
