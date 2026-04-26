@@ -23,6 +23,6 @@ modulo:
     - RedundancyCritic
 
 output:
-  result_dir: result_modulo
+  result_dir: null  # auto-derive: results_llm_modulo_<model>_iters<N>_temp<T>_critics<K>
   num_samples: null
   allow_overwrite: false

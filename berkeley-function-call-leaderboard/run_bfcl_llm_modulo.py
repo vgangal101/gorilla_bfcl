@@ -51,7 +51,7 @@ from dotenv import load_dotenv
 
 # BFCL helpers
 from bfcl_eval.constants.category_mapping import VERSION_PREFIX
-from bfcl_eval.constants.eval_config import DOTENV_PATH, PROMPT_PATH, RESULT_PATH
+from bfcl_eval.constants.eval_config import DOTENV_PATH, PROMPT_PATH
 
 # llm_modulo_bfcl framework
 from controller.meta_controller import MetaController  # noqa: E402
@@ -59,10 +59,12 @@ from critics.argument_schema import ArgumentSchemaCritic  # noqa: E402
 from critics.argument_value import ArgumentValueCritic  # noqa: E402
 from critics.dependency import DependencyCritic  # noqa: E402
 from critics.function_validity import FunctionValidityCritic  # noqa: E402
+from critics.language_ast import LanguageASTCritic  # noqa: E402
 from critics.redundancy import RedundancyCritic  # noqa: E402
 from llm_interface import LLMInterface  # noqa: E402
 from loop import run_llm_modulo  # noqa: E402
 from parser import ProposalParser  # noqa: E402
+from render import plan_to_bfcl_ast  # noqa: E402
 from schemas import Plan  # noqa: E402
 
 
@@ -77,6 +79,7 @@ _CRITIC_REGISTRY: dict[str, type] = {
     "ArgumentSchemaCritic": ArgumentSchemaCritic,
     "ArgumentValueCritic": ArgumentValueCritic,
     "DependencyCritic": DependencyCritic,
+    "LanguageASTCritic": LanguageASTCritic,
     "RedundancyCritic": RedundancyCritic,  # soft
 }
 
@@ -85,6 +88,7 @@ _DEFAULT_CRITICS: list[str] = [
     "ArgumentSchemaCritic",
     "ArgumentValueCritic",
     "DependencyCritic",
+    "LanguageASTCritic",
     "RedundancyCritic",
 ]
 
@@ -102,10 +106,51 @@ _DEFAULTS: dict[str, Any] = {
     "temperature": 0.0,
     "max_iters": 5,
     "critics": _DEFAULT_CRITICS,
-    "result_dir": str(RESULT_PATH),
+    # When None, `result_dir` is auto-derived from the experiment config
+    # (see _derive_result_dir). Set explicitly in the config or via
+    # --result-dir to pin it.
+    "result_dir": None,
+    "experiment_tag": None,
     "num_samples": None,
     "allow_overwrite": False,
+    # Server lifecycle. When `endpoint` isn't set, the runner spins up a
+    # local vLLM/sglang server via BFCL's OSSHandler.spin_up_local_server
+    # and tears it down at the end. Mirrors the `bfcl generate` flags.
+    "backend": "vllm",
+    "num_gpus": 1,
+    "gpu_memory_utilization": 0.9,
+    "skip_server_setup": False,
+    "local_model_path": None,
 }
+
+
+def _slug(s: str) -> str:
+    """Sanitize an arbitrary string for use as a filesystem path segment."""
+    import re
+    return re.sub(r"[^A-Za-z0-9._-]", "_", s)
+
+
+def _derive_result_dir(cfg: dict) -> str:
+    """Build a descriptive default directory name that encodes the run config.
+
+    Shape: results_llm_modulo_<model>_iters<N>_temp<T>_critics<K>[_<tag>]
+
+    Two runs that differ in any of model / max_iters / temperature /
+    critic-bank size land in different directories, so a sweep doesn't
+    silently overwrite itself. Categories aren't in the name because
+    different categories always write different filenames within the
+    same result dir.
+    """
+    parts = ["results_llm_modulo"]
+    parts.append(_slug((cfg.get("model") or "unknown").replace("/", "_")))
+    parts.append(f"iters{cfg['max_iters']}")
+    # `:g` strips trailing zeros, keeps 0.7 as "0.7" and 0.0 as "0".
+    parts.append(f"temp{cfg['temperature']:g}")
+    parts.append(f"critics{len(cfg['critics'])}")
+    tag = cfg.get("experiment_tag")
+    if tag:
+        parts.append(_slug(str(tag)))
+    return "_".join(parts)
 
 
 # ----------------------------------------------------------------------
@@ -166,19 +211,31 @@ def _normalize_bfcl_schema(schema: dict) -> dict:
 
 
 # ----------------------------------------------------------------------
-# Plan -> BFCL AST string. Renders a Plan like
-#     Plan([FunctionCall("f", {"x": 1, "y": "a"})])
-# as the string "[f(x=1, y='a')]" which BFCL's default_decode_ast_prompting
-# can parse back. Values go through repr() so lists/dicts/bools/None all
-# serialize correctly as Python literals.
+# Plan -> BFCL AST string. Rendering is delegated to llm_modulo_bfcl/render.py
+# so the safety-net LanguageASTCritic and the runner emit byte-identical
+# strings. Language is derived from the test category — Python categories
+# get Python `repr()` (existing behavior); Java/JavaScript get language-
+# specific bool/string/dict rendering so their AST decoders accept the
+# output instead of choking on Python literals like `True` and `{'k':'v'}`.
 # ----------------------------------------------------------------------
 
-def _plan_to_bfcl_ast(plan: Plan) -> str:
-    parts: list[str] = []
-    for step in plan.steps:
-        arg_str = ", ".join(f"{k}={v!r}" for k, v in step.arguments.items())
-        parts.append(f"{step.function}({arg_str})")
-    return "[" + ", ".join(parts) + "]"
+_CATEGORY_LANGUAGE: dict[str, str] = {
+    "simple": "python",
+    "simple_python": "python",
+    "simple_java": "java",
+    "simple_javascript": "javascript",
+    "multiple": "python",
+    "parallel": "python",
+    "parallel_multiple": "python",
+    "live_simple": "python",
+    "live_multiple": "python",
+    "live_parallel": "python",
+    "live_parallel_multiple": "python",
+}
+
+
+def _category_language(category: str) -> str:
+    return _CATEGORY_LANGUAGE.get(category, "python")
 
 
 # ----------------------------------------------------------------------
@@ -303,6 +360,12 @@ def _load_config_file(path: Path) -> dict:
         for k in ("result_dir", "num_samples", "allow_overwrite"):
             if k in output:
                 flat[k] = output[k]
+    server = data.get("server") or {}
+    if isinstance(server, dict):
+        for k in ("backend", "num_gpus", "gpu_memory_utilization",
+                 "skip_server_setup", "local_model_path", "endpoint", "api_key"):
+            if k in server:
+                flat[k] = server[k]
     # Accept the singular "test_category" alias for "categories".
     if "test_category" in data and "categories" not in flat:
         flat["categories"] = data["test_category"]
@@ -321,6 +384,66 @@ def _resolve_run_config(config: dict, cli_overrides: dict) -> dict:
         if v is not None:
             merged[k] = v
     return merged
+
+
+# ----------------------------------------------------------------------
+# Server lifecycle
+# ----------------------------------------------------------------------
+
+def _spin_up_server_if_needed(cfg: dict):
+    """Return (handler, endpoint).
+
+    If `cfg['endpoint']` is explicitly set, no handler is built and the
+    endpoint is used as-is. Otherwise we build BFCL's handler for `cfg['model']`
+    and call `spin_up_local_server`, which either spawns a vLLM/sglang process
+    (when `skip_server_setup` is False) or just waits for a server that's
+    already running. Either way, `handler.base_url` is the endpoint the
+    LLM-Modulo loop should talk to.
+
+    Caller is responsible for `handler.shutdown_local_server()` if handler
+    is not None.
+    """
+    if cfg.get("endpoint"):
+        print(f"[modulo] using explicit endpoint: {cfg['endpoint']}")
+        return None, cfg["endpoint"]
+
+    # Lazy imports so --help and pure-config invocations don't pay the
+    # torch/transformers cost.
+    from bfcl_eval._llm_response_generation import build_handler
+    from bfcl_eval.model_handler.local_inference.base_oss_handler import OSSHandler
+
+    handler = build_handler(cfg["model"], cfg["temperature"])
+    if not isinstance(handler, OSSHandler):
+        raise RuntimeError(
+            f"Model '{cfg['model']}' is not an OSS/local model — the built-in "
+            f"server spin-up only works for models whose BFCL handler "
+            f"subclasses OSSHandler. Pass `--endpoint <url>` to point at a "
+            f"remote OpenAI-compatible server instead."
+        )
+
+    mode = "connecting to existing server" if cfg["skip_server_setup"] else \
+           f"spinning up {cfg['backend']} server"
+    print(f"[modulo] {mode} for {cfg['model']} "
+          f"(gpus={cfg['num_gpus']}, util={cfg['gpu_memory_utilization']})")
+
+    handler.spin_up_local_server(
+        num_gpus=cfg["num_gpus"],
+        gpu_memory_utilization=cfg["gpu_memory_utilization"],
+        backend=cfg["backend"],
+        skip_server_setup=cfg["skip_server_setup"],
+        local_model_path=cfg["local_model_path"],
+    )
+    print(f"[modulo] server ready at {handler.base_url}")
+    return handler, handler.base_url
+
+
+def _tear_down_server(handler) -> None:
+    if handler is None:
+        return
+    try:
+        handler.shutdown_local_server()
+    except Exception as e:  # noqa: BLE001 — always continue, we're exiting
+        print(f"[modulo] WARNING: server shutdown raised: {e}")
 
 
 def run_category(
@@ -345,6 +468,8 @@ def run_category(
     entries = _load_test_entries(category)
     if num_samples is not None:
         entries = entries[:num_samples]
+
+    language = _category_language(category)
 
     model_dir = result_dir / model.replace("/", "_")
     group_dir = model_dir / _category_to_group(category)
@@ -383,6 +508,7 @@ def run_category(
                     meta_controller=meta,
                     parser=parser_,
                     max_iters=max_iters,
+                    extra_context={"language": language, "category": category},
                 )
             except Exception as e:
                 stats["total"] += 1
@@ -404,13 +530,13 @@ def run_category(
 
             if result["status"] == "success" and result["plan"] is not None:
                 stats["success"] += 1
-                ast = _plan_to_bfcl_ast(result["plan"])
+                ast = plan_to_bfcl_ast(result["plan"], language)
             else:
                 stats["failure"] += 1
                 # Write the last proposal's plan (if parseable) so the
                 # evaluator still counts the entry; otherwise an empty list.
                 ast = (
-                    _plan_to_bfcl_ast(result["plan"])
+                    plan_to_bfcl_ast(result["plan"], language)
                     if result["plan"] is not None
                     else "[]"
                 )
@@ -438,17 +564,6 @@ def run_category(
 # CLI
 # ----------------------------------------------------------------------
 
-def _resolve_endpoint(cli_endpoint: str | None) -> str:
-    if cli_endpoint:
-        return cli_endpoint
-    remote = os.environ.get("REMOTE_OPENAI_BASE_URL")
-    if remote:
-        return remote
-    host = os.environ.get("LOCAL_SERVER_ENDPOINT", "localhost")
-    port = os.environ.get("LOCAL_SERVER_PORT", "1053")
-    return f"http://{host}:{port}/v1"
-
-
 def _parse_csv(value: str) -> list[str]:
     return [c.strip() for c in value.split(",") if c.strip()]
 
@@ -470,11 +585,26 @@ def main() -> int:
     )
     ap.add_argument(
         "--endpoint", default=None,
-        help="OpenAI-compatible base URL. Defaults to $REMOTE_OPENAI_BASE_URL, "
-             "else http://$LOCAL_SERVER_ENDPOINT:$LOCAL_SERVER_PORT/v1 "
-             "(localhost:1053 if unset).",
+        help="OpenAI-compatible base URL. If set, the runner skips server "
+             "spin-up and talks directly to this endpoint. If unset, the "
+             "runner spins up a local vLLM/sglang server for --model.",
     )
     ap.add_argument("--api-key", default=None, help="API key (or $OPENAI_API_KEY).")
+    ap.add_argument(
+        "--backend", default=None, choices=["vllm", "sglang"],
+        help="Local server backend when spinning up (default: vllm).",
+    )
+    ap.add_argument("--num-gpus", type=int, default=None,
+                    help="Tensor-parallel size for the local server (default: 1).")
+    ap.add_argument("--gpu-memory-utilization", type=float, default=None,
+                    help="vLLM/sglang memory fraction (default: 0.9).")
+    ap.add_argument(
+        "--skip-server-setup", action="store_true", default=None,
+        help="Don't spawn a server; expect one already running at "
+             "$LOCAL_SERVER_ENDPOINT:$LOCAL_SERVER_PORT.",
+    )
+    ap.add_argument("--local-model-path", default=None,
+                    help="Optional path to a local model snapshot to serve.")
     ap.add_argument("--max-iters", type=int, default=None, help="Critic-loop iteration budget.")
     ap.add_argument(
         "--num-samples", type=int, default=None,
@@ -483,8 +613,14 @@ def main() -> int:
     ap.add_argument("--temperature", type=float, default=None)
     ap.add_argument(
         "--result-dir", default=None,
-        help="Where to write result files. Use a dedicated dir "
-             "(e.g. result_modulo) to keep runs isolated.",
+        help="Where to write result files. If unset, auto-derives a name "
+             "like `results_llm_modulo_<model>_iters<N>_temp<T>_critics<K>` "
+             "from the resolved run config so different sweeps don't collide.",
+    )
+    ap.add_argument(
+        "--experiment-tag", default=None,
+        help="Short label (e.g. 'baseline', 'diversified') appended to the "
+             "auto-derived result_dir. Ignored if --result-dir is set.",
     )
     ap.add_argument(
         "--allow-overwrite", "-o", action="store_true", default=None,
@@ -507,11 +643,21 @@ def main() -> int:
         "temperature": args.temperature,
         "max_iters": args.max_iters,
         "result_dir": args.result_dir,
+        "experiment_tag": args.experiment_tag,
         "num_samples": args.num_samples,
         "allow_overwrite": args.allow_overwrite,
+        "backend": args.backend,
+        "num_gpus": args.num_gpus,
+        "gpu_memory_utilization": args.gpu_memory_utilization,
+        "skip_server_setup": args.skip_server_setup,
+        "local_model_path": args.local_model_path,
     }
 
     cfg = _resolve_run_config(file_config, cli_overrides)
+
+    # Auto-derive result_dir if the user didn't pin one.
+    if not cfg["result_dir"]:
+        cfg["result_dir"] = _derive_result_dir(cfg)
 
     # Required keys.
     missing = [k for k in ("model", "categories") if not cfg.get(k)]
@@ -523,8 +669,6 @@ def main() -> int:
         )
         return 2
 
-    # Env fallback for endpoint / api_key.
-    endpoint = cfg["endpoint"] or _resolve_endpoint(None)
     api_key = cfg["api_key"] or os.environ.get("OPENAI_API_KEY")
 
     # Validate critic names up front.
@@ -547,24 +691,33 @@ def main() -> int:
     # Echo the resolved config so experiments are reproducible from logs.
     print("[modulo] resolved run config:")
     for k in ("model", "categories", "endpoint", "temperature", "max_iters",
-              "critics", "result_dir", "num_samples", "allow_overwrite"):
+              "critics", "experiment_tag", "result_dir",
+              "num_samples", "allow_overwrite",
+              "backend", "num_gpus", "gpu_memory_utilization",
+              "skip_server_setup", "local_model_path"):
         print(f"  {k}: {cfg[k]}")
     print()
 
-    per_cat: list[dict] = []
-    for cat in cfg["categories"]:
-        per_cat.append(run_category(
-            model=cfg["model"],
-            category=cat,
-            endpoint=endpoint,
-            api_key=api_key,
-            max_iters=cfg["max_iters"],
-            num_samples=cfg["num_samples"],
-            result_dir=Path(cfg["result_dir"]),
-            temperature=cfg["temperature"],
-            allow_overwrite=bool(cfg["allow_overwrite"]),
-            critic_names=cfg["critics"],
-        ))
+    handler = None
+    try:
+        handler, endpoint = _spin_up_server_if_needed(cfg)
+
+        per_cat: list[dict] = []
+        for cat in cfg["categories"]:
+            per_cat.append(run_category(
+                model=cfg["model"],
+                category=cat,
+                endpoint=endpoint,
+                api_key=api_key,
+                max_iters=cfg["max_iters"],
+                num_samples=cfg["num_samples"],
+                result_dir=Path(cfg["result_dir"]),
+                temperature=cfg["temperature"],
+                allow_overwrite=bool(cfg["allow_overwrite"]),
+                critic_names=cfg["critics"],
+            ))
+    finally:
+        _tear_down_server(handler)
 
     total = sum(c["total"] for c in per_cat)
     success = sum(c["success"] for c in per_cat)

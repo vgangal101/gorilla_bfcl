@@ -51,6 +51,6 @@ modulo:
 output:
   # Write to a dedicated dir so a baseline `run_bfcl_generate.py` run and
   # this modulo run can be scored side-by-side with `bfcl evaluate`.
-  result_dir: result_modulo
+  result_dir: null  # auto-derive: results_llm_modulo_<model>_iters<N>_temp<T>_critics<K>
   num_samples: null       # e.g. 20 to smoke-test quickly
   allow_overwrite: false
