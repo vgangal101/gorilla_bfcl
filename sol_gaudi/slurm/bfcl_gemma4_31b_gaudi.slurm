@@ -9,7 +9,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=60
 #SBATCH --mem=384G
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=sol_gaudi/logs/bfcl_gemma4_31b_%j.out
 #SBATCH --error=sol_gaudi/logs/bfcl_gemma4_31b_%j.err
 

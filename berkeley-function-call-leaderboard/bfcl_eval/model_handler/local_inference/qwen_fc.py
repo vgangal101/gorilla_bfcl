@@ -8,6 +8,9 @@ from overrides import override
 
 
 class QwenFCHandler(OSSHandler):
+    # See QwenHandler — same rationale for forcing thinking-mode temperature.
+    _THINKING_TEMPERATURE = 0.6
+
     def __init__(
         self,
         model_name,
@@ -17,7 +20,9 @@ class QwenFCHandler(OSSHandler):
         dtype="bfloat16",
         **kwargs,
     ) -> None:
-        super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
+        super().__init__(
+            model_name, self._THINKING_TEMPERATURE, registry_name, is_fc_model, **kwargs
+        )
         self.model_name_huggingface = model_name
 
     @override
@@ -235,7 +240,7 @@ class QwenFCHandler(OSSHandler):
                 if idx == len(messages) - 1 or next_role != "tool":
                     formatted_prompt += "<|im_end|>\n"
 
-        formatted_prompt += "<|im_start|>assistant\n<think>\n\n</think>\n\n"
+        formatted_prompt += "<|im_start|>assistant\n"
         return formatted_prompt
 
     @override

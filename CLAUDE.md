@@ -107,3 +107,48 @@ KV-cache tuning (if a run OOMs or stalls — e.g. long multi-turn / agentic traj
 - `VLLM_GPU_MEMORY_UTILIZATION` — default 0.85; push to 0.92 to squeeze more KV out of HBM before adding HPUs.
 - `BFCL_NUM_THREADS` — lowering concurrency reduces in-flight sequences, which reduces KV pressure.
 - HPU count / TP — bump `hpus` + `tp` for the affected model in `generate_bfcl_scripts.py` (not the `.slurm` — it's regenerated) and re-run `python3 sol_gaudi/generate_bfcl_scripts.py`. Per-HPU HBM is 96 GB; qwen3_32b at TP=4 already gets 384 GB total (~260 GB KV budget after weights), ~3× what 2×A100-80G offers.
+
+## LLM-Modulo path (branch: LLM-Modulo_gaudi)
+
+Merges `main` (Gaudi plumbing) + `LLM-Modulo_agent` (the Generate-Test-Critique runner in `llm_modulo_bfcl/`). Runner entry: `berkeley-function-call-leaderboard/run_bfcl_llm_modulo.py`.
+
+Lifecycle mirrors baseline — same `sol_gaudi/manage_bfcl_gaudi.sh` wrapper, same per-model SBATCH generator — plus:
+- `sol_gaudi/submit_modulo_sweep.sh` — fires 8B/14B/32B jobs in one go (defaults to `configs/modulo_full.yaml`; override with `MODELS=...` or `MODULO_CONFIG=...`).
+- `sol_gaudi/quickstart.sh modulo` — smoke-test entrypoint (submits `qwen3_4b_modulo` on `configs/smoketest.yaml`).
+- Model targets live in `MODULO_MODELS` in `sol_gaudi/generate_bfcl_scripts.py`. **4B is excluded** from the modulo sweep: the only Qwen3-4B variant BFCL registers is `Qwen3-4B-Instruct-2507`, which is the non-thinking specialist; thinking-mode prompts regress hard on it. Use 8B/14B/32B.
+
+Gotchas burned through so far (don't repeat them):
+
+1. **`<think>` in Qwen3 output** — hybrid 8B/14B/32B prepend a `<think>…</think>` block before the JSON plan. The modulo `ProposalParser` in `llm_modulo_bfcl/parser.py` strips it via `_THINK_RE` before `json.loads`. If you ever see every sample scoring 0% with `model_result_raw: "[]"`, that regex regressed — fix `parser.py:14` before blaming the model.
+2. **Category name vs. data-file mismatch** — `ALLOWED_CATEGORIES` in `run_bfcl_llm_modulo.py` is hand-maintained. BFCL v4 has no `BFCL_v4_simple.json` (split into `simple_python` / `_java` / `_javascript`), so listing `simple` anywhere — in the yaml **or** in `ALLOWED_CATEGORIES` — crashes on the first category with `FileNotFoundError`, after vLLM has already loaded (wastes ~2 min of HPU time per job). The failure goes to `.err`; `.out` just shows "Stopping vLLM server" which looks like a clean exit. Cross-check any new category against `ls berkeley-function-call-leaderboard/bfcl_eval/data/`.
+3. **`allow_overwrite: false`** (default in both configs) — if `result_modulo/<Model>/non_live/*.json` exists from a previous run, the runner raises `FileExistsError` right after the config echo. Either `rm -rf result_modulo/<Model>` before resubmitting, or flip `allow_overwrite: true` in the yaml.
+4. **Score-dir contamination** — `bfcl evaluate` writes `score/<Model>/` keyed on model name, not run type. A modulo partial-eval over `simple_python` coexists with baseline scores from `agentic/`, `live/`, `multi_turn/`, other `non_live/` categories in the same dir. When bundling modulo results to share, tar only `result_modulo/<Model>` + the specific `score/<Model>/<group>/BFCL_v4_<category>_score.json` files the modulo run produced. Don't send the whole `score/<Model>/` dir.
+5. **Aggregator `KeyError` on stale score dirs** — `generate_leaderboard_csv` iterates over everything under `score/` and explodes on orphan dirs from prior experiments (e.g. `Qwen_Qwen3-*.pre_nothink/`). The eval files land fine, but the aggregation step dies. Clean up stale `score/<Model>.*` dirs before running eval.
+
+Config files:
+- `berkeley-function-call-leaderboard/configs/smoketest.yaml` — 10 samples on `simple_python`, `max_iters=2`, `allow_overwrite: true`, `result_dir: result_modulo_smoke` (note: the runner currently ignores this override and writes to `result_modulo/` — minor bug, not blocking).
+- `berkeley-function-call-leaderboard/configs/modulo_full.yaml` — 10 AST categories (`simple` dropped in commit `ed8bc9a`), `max_iters=5`, all 5 critics, `temperature: 0.001` (was 0.6 — lowered 2026-04-23 to match baseline).
+
+### Current sweep state (as of 2026-04-23 evening)
+
+Re-submitted 8B/14B/32B on `configs/modulo_full.yaml` after fixing two issues that made the Apr 23 morning run diverge from baseline:
+
+- `8fb0541 llm_modulo: drop temperature 0.6 -> 0.001 to match BFCL baseline` — the 0.6 "Qwen thinking-mode recommendation" was the main driver of the previous ~3.55pp regression vs baseline on 32B. Baseline ran at BFCL's CLI default of 0.001 with thinking ON and got 86-96% on single-turn AST without collapse, so the comment warning about 0.001 repetition collapse did not apply to this workload.
+- `6e1c8de llm_modulo: set 30-min OpenAI client timeout to survive 32B generation` — previous 32B job hit one `APITimeoutError` on a single sample (default httpx timeout too short). Impact was ~0.04% of samples, not the main accuracy issue, but worth fixing.
+
+Modulo jobs submitted 2026-04-23 evening (via `submit_modulo_sweep.sh`, auto-clean of `result_modulo/<Model>/` worked on submit):
+- qwen3_8b_modulo  → job **51803356**
+- qwen3_14b_modulo → job **51803357**
+- qwen3_32b_modulo → job **51803358**
+
+(Superseded prior jobs 51800071/73/75 — those were submitted earlier the same evening before the `submit_modulo_sweep.sh` resubmit. Cancel those if they're still in the queue to avoid running twice.)
+
+Baseline jobs (on `bfcl_gaudi` branch) are run separately by the coworker — see `sol_gaudi/tar_results.sh` for bundling both sweeps' artifacts when done.
+
+Logs at `sol_gaudi/logs/bfcl_qwen3_{8b,14b,32b}_modulo_<jobid>.{out,err}`. 24h walltimes.
+
+Previous Apr 23 morning run (temperature=0.6, pre-fix) for reference — `simple_java` dropped −22pp on 14B and −15pp on 32B vs baseline; 32B aggregate was 82.37% vs baseline 85.92%. If this re-run lands within ±2pp of baseline, the code-path difference between modulo's `OpenAICompatLLM` (→ vLLM /v1/chat/completions, native Qwen3 template) and baseline's `QwenHandler._format_prompt` (→ vLLM /v1/completions, BFCL-built template) is immaterial and no refactor is needed. If 3pp+ gap persists, next step is rewriting `OpenAICompatLLM` in `run_bfcl_llm_modulo.py:187-210` to route through `QwenHandler`.
+
+Branch settings audit (2026-04-23) — these **cannot** be cleanly unified without rework:
+- `bfcl_gaudi` HEAD has `0340576` which adds empty `<think></think>` prefill → thinking OFF. The Apr 19 baseline tarball (scores in `~/Downloads/bfcl_qwen3_14b_32b/`) was generated *before* `0340576` → thinking ON. Re-running `bfcl generate` on `bfcl_gaudi` HEAD today will NOT reproduce those baseline numbers.
+- `LLM-Modulo_gaudi` has `_THINKING_TEMPERATURE = 0.6` hardcoded in `QwenHandler`/`QwenFCHandler` (commit `5e6b9f6`). This override only bites if anyone runs `bfcl generate` from the modulo branch — not modulo runs themselves (which go through `OpenAICompatLLM`). Don't remove it without confirming no baseline `bfcl generate` runs are happening on this branch.

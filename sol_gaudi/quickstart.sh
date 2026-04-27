@@ -3,10 +3,20 @@
 #
 # One-command entry: check + setup + generate + submit smoke test.
 # Run this from a SOL login node after cloning the repo and creating config.env.
+#
+# Usage:
+#   ./sol_gaudi/quickstart.sh            # baseline: bfcl generate qwen3_4b simple_python
+#   ./sol_gaudi/quickstart.sh modulo     # LLM-Modulo: qwen3_4b_modulo, configs/smoketest.yaml
 
 set -euo pipefail
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+MODE="${1:-baseline}"
+case "${MODE}" in
+    baseline|modulo) ;;
+    *) echo "Unknown mode: ${MODE}. Use 'baseline' or 'modulo'." >&2; exit 1;;
+esac
 
 GREEN='\033[0;32m'; BLUE='\033[0;34m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 step() { echo -e "\n${BLUE}=== $* ===${NC}"; }
@@ -44,9 +54,17 @@ source activate "${BFCL_GAUDI_ENV}"
 python3 "${SCRIPT_DIR}/generate_bfcl_scripts.py"
 
 # --- 4. Submit smoke test ---
-step "4/4 Submit smoke test: qwen3_4b on simple_python"
-BFCL_TEST_CATEGORY="${BFCL_TEST_CATEGORY:-simple_python}" \
-    bash "${SCRIPT_DIR}/manage_bfcl_gaudi.sh" submit qwen3_4b
+if [[ "${MODE}" == "modulo" ]]; then
+    step "4/4 Submit smoke test: qwen3_4b_modulo on configs/smoketest.yaml"
+    MODULO_CONFIG="${MODULO_CONFIG:-configs/smoketest.yaml}" \
+        bash "${SCRIPT_DIR}/manage_bfcl_gaudi.sh" submit qwen3_4b_modulo
+    SMOKE_TARGET="qwen3_4b_modulo"
+else
+    step "4/4 Submit smoke test: qwen3_4b on simple_python"
+    BFCL_TEST_CATEGORY="${BFCL_TEST_CATEGORY:-simple_python}" \
+        bash "${SCRIPT_DIR}/manage_bfcl_gaudi.sh" submit qwen3_4b
+    SMOKE_TARGET="qwen3_4b"
+fi
 
 echo
 echo -e "${GREEN}Quickstart complete.${NC}"
@@ -54,7 +72,13 @@ echo
 echo "Next steps:"
 echo "  ./sol_gaudi/manage_bfcl_gaudi.sh status"
 echo "  ./sol_gaudi/manage_bfcl_gaudi.sh logs <JOB_ID>"
-echo "  ./sol_gaudi/manage_bfcl_gaudi.sh results qwen3_4b   # once job finishes"
+echo "  ./sol_gaudi/manage_bfcl_gaudi.sh results ${SMOKE_TARGET}   # once job finishes"
 echo
-echo "Full sweep (after smoke test passes):"
-echo "  ./sol_gaudi/manage_bfcl_gaudi.sh submit-all"
+if [[ "${MODE}" == "modulo" ]]; then
+    echo "Full modulo sweep (after smoke test passes):"
+    echo "  for m in qwen3_4b_modulo qwen3_8b_modulo qwen3_14b_modulo qwen3_32b_modulo; do"
+    echo "      ./sol_gaudi/manage_bfcl_gaudi.sh submit \$m; done"
+else
+    echo "Full sweep (after smoke test passes):"
+    echo "  ./sol_gaudi/manage_bfcl_gaudi.sh submit-all"
+fi

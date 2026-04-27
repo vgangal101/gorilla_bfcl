@@ -9,7 +9,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=24
 #SBATCH --mem=160G
-#SBATCH --time=08:00:00
+#SBATCH --time=16:00:00
 #SBATCH --output=sol_gaudi/logs/bfcl_qwen3_8b_%j.out
 #SBATCH --error=sol_gaudi/logs/bfcl_qwen3_8b_%j.err
 

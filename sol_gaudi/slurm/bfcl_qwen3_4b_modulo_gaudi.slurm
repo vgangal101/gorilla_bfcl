@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=bfcl_qwen3_4b_gaudi
+#SBATCH --job-name=bfcl_qwen3_4b_modulo_gaudi
 #SBATCH --partition=gaudi
 #SBATCH --qos=class_gaudi
 #SBATCH --account=class_cse59827694spring2026
@@ -9,9 +9,9 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=24
 #SBATCH --mem=160G
-#SBATCH --time=10:00:00
-#SBATCH --output=sol_gaudi/logs/bfcl_qwen3_4b_%j.out
-#SBATCH --error=sol_gaudi/logs/bfcl_qwen3_4b_%j.err
+#SBATCH --time=24:00:00
+#SBATCH --output=sol_gaudi/logs/bfcl_qwen3_4b_modulo_%j.out
+#SBATCH --error=sol_gaudi/logs/bfcl_qwen3_4b_modulo_%j.err
 
 set -euo pipefail
 
@@ -30,18 +30,9 @@ mkdir -p "${HF_CACHE_HOST}"
 HABANA_LOGS="${LOGS_DIR}/habana_${SLURM_JOB_ID}"
 mkdir -p "${HABANA_LOGS}"
 
-# Port 8000 — --exclusive owns the node so no conflict possible.
 PORT=8000
 echo "vLLM server will bind to 127.0.0.1:${PORT}"
 
-# --- Launch vLLM server inside Apptainer ---
-# Binds are per /data/sse/gaudi/guides/vllm-gaudi-apptainer-guide.md: they
-# expose the host's Habana runtime & a writable log dir, which is what
-# actually fixes HPU init (synStatus=26 without them).
-# We invoke vLLM's own OpenAI entrypoint rather than ASU's
-# `entrypoints.entrypoint_main server` wrapper, because that wrapper has
-# an internal model allowlist (server/server_defaults.yaml) covering only
-# Llama-3.1-class models.
 apptainer exec \
     --bind /usr/lib64:/host-lib64 \
     --bind /usr/lib/habanalabs:/usr/lib/habanalabs \
@@ -77,7 +68,6 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-# --- Wait for server health (up to 10 min) ---
 echo "Waiting for /v1/models to respond..."
 for i in $(seq 1 60); do
     if curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1; then
@@ -95,22 +85,29 @@ if ! curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1; then
     exit 1
 fi
 
-# --- Point BFCL at the running server ---
 export REMOTE_OPENAI_BASE_URL="http://127.0.0.1:${PORT}/v1"
 export REMOTE_OPENAI_API_KEY="EMPTY"
 export LOCAL_SERVER_ENDPOINT="127.0.0.1"
 export LOCAL_SERVER_PORT="${PORT}"
 
-# --- Run BFCL generate + evaluate ---
+# --- Run LLM-Modulo + evaluate ---
 cd "${BFCL_ROOT}"
-# Default coverage: single_turn (non_live + live) + multi_turn + memory.
-# 20 of 22 scoring categories. web_search_* is skipped because it requires a
-# paid SerpAPI key (~$75/mo). See sol_gaudi/README.md "Test coverage".
-TEST_CAT="${BFCL_TEST_CATEGORY:-single_turn,multi_turn,memory}"
-echo "Running bfcl generate on categories: ${TEST_CAT}"
-bfcl generate --model "Qwen/Qwen3-4B-Instruct-2507" --test-category "${TEST_CAT}" --skip-server-setup --num-threads "${BFCL_NUM_THREADS}"
+MODULO_CONFIG_PATH="${MODULO_CONFIG:-configs/modulo_example.yaml}"
+MODULO_RESULT_DIR="${MODULO_RESULT_DIR:-result_modulo}"
+echo "LLM-Modulo: config=${MODULO_CONFIG_PATH} model=Qwen/Qwen3-4B-Instruct-2507 result_dir=${MODULO_RESULT_DIR}"
+
+# Pull category list from the YAML so we can pass --test-category to evaluate.
+TEST_CAT=$(python3 -c "import yaml,sys; print(','.join(yaml.safe_load(open(sys.argv[1]))['categories']))" "${MODULO_CONFIG_PATH}")
+echo "Categories from config: ${TEST_CAT}"
+
+python3 run_bfcl_llm_modulo.py \
+    --config "${MODULO_CONFIG_PATH}" \
+    --model "Qwen/Qwen3-4B-Instruct-2507" \
+    --endpoint "${REMOTE_OPENAI_BASE_URL}" \
+    --result-dir "${MODULO_RESULT_DIR}"
 
 echo "Running bfcl evaluate"
-bfcl evaluate --model "Qwen/Qwen3-4B-Instruct-2507" --test-category "${TEST_CAT}"
+# --partial-eval so a num_samples-capped smoke run still scores cleanly.
+bfcl evaluate --model "Qwen/Qwen3-4B-Instruct-2507" --test-category "${TEST_CAT}" --result-dir "${MODULO_RESULT_DIR}" --partial-eval
 
-echo "DONE model=Qwen/Qwen3-4B-Instruct-2507"
+echo "DONE model=Qwen/Qwen3-4B-Instruct-2507 (LLM-Modulo)"
