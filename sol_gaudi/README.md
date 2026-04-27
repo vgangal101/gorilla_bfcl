@@ -15,7 +15,7 @@ Target models (full sweep): `Qwen/Qwen3-4B`, `Qwen/Qwen3-8B`, `Qwen/Qwen3-14B`, 
 
 ```bash
 cd /scratch/$USER
-git clone https://github.com/HectorHernandez1/gorilla_bfcl.git   # or your fork
+git clone https://github.com/vgangal101/gorilla_bfcl.git   # or your fork
 cd gorilla_bfcl
 git checkout bfcl_gaudi
 
