@@ -9,7 +9,7 @@ ssh <asurite>@login.sol.rc.asu.edu
 
 # 2. Clone + switch to the Gaudi branch (on /scratch, not $HOME)
 cd /scratch/$USER
-git clone https://github.com/HectorHernandez1/gorilla_bfcl.git
+git clone https://github.com/vgangal101/gorilla_bfcl.git
 cd gorilla_bfcl
 git checkout bfcl_gaudi
 
