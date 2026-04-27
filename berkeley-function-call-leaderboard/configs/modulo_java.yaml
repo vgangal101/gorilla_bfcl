@@ -1,0 +1,34 @@
+# LLM-Modulo Java/JS-focused config — exercises the LanguageASTCritic on
+# the multi-language single-turn AST categories. simple_python is included
+# as a control so a regression on the new critic shows up against a known-
+# good baseline.
+#
+# Invoke (Gaudi):
+#   MODULO_CONFIG=configs/modulo_java.yaml \
+#     ./sol_gaudi/submit_modulo_sweep.sh
+
+model: Qwen/Qwen3-8B
+endpoint: null
+api_key: null
+
+temperature: 0.001
+
+categories:
+  - simple_python
+  - simple_java
+  - simple_javascript
+
+modulo:
+  max_iters: 5
+  critics:
+    - FunctionValidityCritic
+    - ArgumentSchemaCritic
+    - ArgumentValueCritic
+    - DependencyCritic
+    - LanguageASTCritic
+    - RedundancyCritic
+
+output:
+  result_dir: result_modulo
+  num_samples: null
+  allow_overwrite: true
