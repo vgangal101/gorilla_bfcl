@@ -14,17 +14,19 @@ The trained model is evaluated with the same `bfcl evaluate` command used for ba
 grpo_pipeline/
 ├── data_prep.py       Extract (prompt, ground_truth) pairs from BFCL JSONL files
 ├── reward.py          Wrap bfcl_eval ast_checker as a 0/1 scalar reward for GRPOTrainer
-├── sft_train.py       Phase 1 — LoRA SFT warm-start on Qwen3-8B
-├── grpo_train.py      Phase 2 — GRPO fine-tuning with K=4 rollouts per prompt
+├── sft_train.py       Phase 1 — LoRA SFT (reads model from env vars)
+├── grpo_train.py      Phase 2 — GRPO training (reads model/checkpoint from env vars)
 ├── hf_job.py          Submit the full pipeline as a HuggingFace Job on A100
 └── slurm/
     ├── setup_env.sh       One-time conda env setup (run once on login node)
-    ├── sft_train.slurm    SBATCH script for SFT phase
-    ├── grpo_train.slurm   SBATCH script for GRPO phase
-    ├── evaluate.slurm     SBATCH script — serve checkpoint, bfcl generate, bfcl evaluate
+    ├── submit.sh          Entry point — submit pipeline for a given model
+    ├── run_pipeline.slurm Unified job — SFT → GRPO → Evaluate in one submission
     └── logs/              Job stdout/stderr land here
 
 checkpoints/           Trained model weights land here (gitignored except .gitkeep)
+  └── <model_key>/
+      ├── sft_final/       SFT checkpoint
+      └── grpo_final/      GRPO checkpoint (served for evaluation)
 ```
 
 All scripts are run from the **repo root** (`gorilla_bfcl/`), not from inside `grpo_pipeline/`.
@@ -219,66 +221,52 @@ What to expect:
 
 ### Step 5 — Run on ASU SOL (SLURM)
 
-This is the recommended path if you have access to SOL's `general` partition.
 All commands run from the repo root on a **SOL login node**.
 
-**One-time setup (do this before your first job):**
+**One-time setup (run once, never again):**
 
 ```bash
-cd /scratch/$USER/gorilla_bfcl   # or wherever the repo lives on SOL
+cd /scratch/$USER/gorilla_bfcl
 bash grpo_pipeline/slurm/setup_env.sh
 ```
 
-This creates the `bfcl_rl` conda env and installs all training dependencies.
-Takes ~5 minutes. Only needs to be run once.
+Creates the `bfcl_rl` conda env and installs all dependencies. Takes ~5 minutes.
 
-**Submit SFT:**
-
-```bash
-sbatch grpo_pipeline/slurm/sft_train.slurm
-```
-
-Note the job ID printed (e.g. `Submitted batch job 12345678`).
-
-**Submit GRPO — chained to start automatically after SFT finishes:**
+**Submit the full pipeline for a model (single command):**
 
 ```bash
-# Replace 12345678 with your actual SFT job ID
-sbatch --dependency=afterok:12345678 grpo_pipeline/slurm/grpo_train.slurm
+bash grpo_pipeline/slurm/submit.sh qwen3_8b
 ```
 
-Or submit independently if SFT is already done:
+That's it. One command submits one job that runs SFT → GRPO → Evaluate in sequence.
+
+Available model keys:
+
+| Key | Model | GPUs | Walltime |
+|---|---|---|---|
+| `qwen3_8b` | Qwen/Qwen3-8B | 1×A100 | 24h |
+| `qwen3_14b` | Qwen/Qwen3-14B | 2×A100 | 48h |
+| `qwen3_32b` | Qwen/Qwen3-32B | 4×A100 | 120h |
+| `gemma4_31b` | google/gemma-4-31B-it | 4×A100 | 120h |
+
+**Monitor:**
 
 ```bash
-sbatch grpo_pipeline/slurm/grpo_train.slurm
+squeue -u $USER
+tail -f grpo_pipeline/slurm/logs/bfcl_rl_qwen3_8b_<JOBID>.out
 ```
 
-**Monitor jobs:**
+**To run multiple models in parallel** (each gets its own job):
 
 ```bash
-squeue -u $USER                          # see queue status
-tail -f grpo_pipeline/slurm/logs/sft_<JOBID>.out   # live SFT log
-tail -f grpo_pipeline/slurm/logs/grpo_<JOBID>.out  # live GRPO log
+bash grpo_pipeline/slurm/submit.sh qwen3_8b
+bash grpo_pipeline/slurm/submit.sh qwen3_14b
+bash grpo_pipeline/slurm/submit.sh gemma4_31b
 ```
 
-**If H100s are unavailable** (queue full), switch to A100 on the `public` partition.
-Edit the top of the `.slurm` file and change:
-```bash
-#SBATCH --partition=general
-#SBATCH --gres=gpu:h100:1
-```
-to:
-```bash
-#SBATCH --partition=public
-#SBATCH --gres=gpu:a100:1
-```
-
-**Expected runtimes on H100:**
-
-| Phase | Time |
-|---|---|
-| SFT (2 epochs, ~1500 examples) | ~1–2 hours |
-| GRPO (3 epochs, ~170 examples, K=4) | ~4–6 hours |
+Checkpoints and scores are namespaced per model so jobs don't collide:
+- `checkpoints/qwen3_8b/grpo_final/`
+- `score/grpo_qwen3_8b/`
 
 ---
 

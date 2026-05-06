@@ -8,6 +8,7 @@ Run:
     python grpo_pipeline/sft_train.py
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -20,8 +21,10 @@ from trl import SFTTrainer, SFTConfig
 
 from data_prep import build_dataset
 
-MODEL = "Qwen/Qwen3-8B"
-OUTPUT_DIR = "checkpoints/sft"
+# Configurable via environment variables — set by run_pipeline.slurm
+MODEL_KEY = os.environ.get("BFCL_MODEL_KEY", "qwen3_8b")
+MODEL     = os.environ.get("BFCL_HF_MODEL",  "Qwen/Qwen3-8B")
+OUTPUT_DIR = f"checkpoints/{MODEL_KEY}/sft"
 
 
 def main():

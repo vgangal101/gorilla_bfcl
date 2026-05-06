@@ -8,6 +8,7 @@ Run:
     python grpo_pipeline/grpo_train.py
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -21,8 +22,10 @@ from trl import GRPOTrainer, GRPOConfig
 from data_prep import build_dataset
 from reward import bfcl_reward_fn
 
-SFT_CHECKPOINT = "checkpoints/sft_final"
-OUTPUT_DIR = "checkpoints/grpo"
+# Configurable via environment variables — set by run_pipeline.slurm
+MODEL_KEY      = os.environ.get("BFCL_MODEL_KEY",      "qwen3_8b")
+SFT_CHECKPOINT = os.environ.get("BFCL_SFT_CHECKPOINT", f"checkpoints/{MODEL_KEY}/sft_final")
+OUTPUT_DIR     = f"checkpoints/{MODEL_KEY}/grpo"
 
 
 def main():
