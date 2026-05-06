@@ -15,8 +15,8 @@ TRAIN_CATEGORIES = [
     "simple_python",
     "simple_java",
     "simple_javascript",
-    "parallel_function",
-    "multiple_function",
+    "parallel",
+    "multiple",
 ]
 
 SYSTEM_PROMPT = (

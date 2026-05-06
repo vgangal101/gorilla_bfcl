@@ -55,8 +55,8 @@ This is the exact same checker `bfcl evaluate` uses, so GRPO is directly optimiz
 | `simple_python` | Python | ~400 |
 | `simple_java` | Java | ~400 |
 | `simple_javascript` | JavaScript | ~400 |
-| `parallel_function` | Python | ~200 |
-| `multiple_function` | Python | ~200 |
+| `parallel` | Python | ~200 |
+| `multiple` | Python | ~200 |
 
 90% of each category goes to SFT, 10% to GRPO. Multi-turn and live categories are excluded — multi-turn requires stateful conversation handling that GRPO's single-turn rollouts do not support.
 
@@ -354,4 +354,4 @@ The columns you care about for comparison:
 | Qwen3-8B + LLM Modulo | `result_modulo/Qwen3-8B/` scored via `bfcl evaluate --partial-eval` |
 | Qwen3-8B GRPO (this pipeline) | `score/grpo_qwen3_8b/` |
 
-A successful GRPO run should close most of the gap between baseline and LLM Modulo on `simple_*` categories, while matching or exceeding LLM Modulo on `parallel_function` and `multiple_function` (where argument chaining matters most).
+A successful GRPO run should close most of the gap between baseline and LLM Modulo on `simple_*` categories, while matching or exceeding LLM Modulo on `parallel` and `multiple` (where argument chaining matters most).

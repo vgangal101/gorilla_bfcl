@@ -16,8 +16,8 @@ from bfcl_eval.constants.enums import Language
 
 LANG_MAP = {
     "simple_python": Language.PYTHON,
-    "parallel_function": Language.PYTHON,
-    "multiple_function": Language.PYTHON,
+    "parallel": Language.PYTHON,
+    "multiple": Language.PYTHON,
     "simple_java": Language.JAVA,
     "simple_javascript": Language.JAVASCRIPT,
 }

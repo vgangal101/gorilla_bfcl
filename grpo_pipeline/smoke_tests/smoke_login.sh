@@ -58,7 +58,7 @@ check "reward.py smoke test"  "python grpo_pipeline/reward.py"
 echo ""
 
 echo "[ BFCL data files exist ]"
-for cat in simple_python simple_java simple_javascript parallel_function multiple_function; do
+for cat in simple_python simple_java simple_javascript parallel multiple; do
     check "BFCL_v4_${cat}.json" \
         "test -f berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_${cat}.json" \
         "file not found — run: ls bfcl_eval/data/BFCL_v4_*${cat}*"
