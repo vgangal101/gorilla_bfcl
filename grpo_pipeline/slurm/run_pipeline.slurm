@@ -27,7 +27,6 @@ set -euo pipefail
 
 BFCL_SFT_CHECKPOINT="checkpoints/${BFCL_MODEL_KEY}/sft_final"
 BFCL_GRPO_CHECKPOINT="checkpoints/${BFCL_MODEL_KEY}/grpo_final"
-BFCL_EVAL_MODEL="grpo_${BFCL_MODEL_KEY}"
 export BFCL_MODEL_KEY BFCL_HF_MODEL BFCL_SFT_CHECKPOINT
 
 echo "=========================================="
