@@ -110,6 +110,12 @@ fi
 VLLM_PORT=8001
 VLLM_LOG="grpo_pipeline/slurm/logs/vllm_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
 TEST_CATEGORIES="simple_python,simple_java,simple_javascript,parallel_function,multiple_function"
+VLLM_PID=""
+
+# Ensure vLLM is killed on any exit (success, error, or signal).
+# Without this, set -e would exit on bfcl generate failure and leave
+# vLLM consuming GPUs for the rest of the walltime.
+trap '[[ -n "$VLLM_PID" ]] && kill "$VLLM_PID" 2>/dev/null || true' EXIT
 
 # Start vLLM server with the LoRA checkpoint.
 # Use $BFCL_HF_MODEL as the LoRA alias so bfcl generate sees a registered

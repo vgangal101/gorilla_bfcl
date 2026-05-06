@@ -14,9 +14,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "berkeley-function-call-leaderboard"))
 
+import torch
 from datasets import Dataset
-from peft import LoraConfig
-from transformers import AutoTokenizer
+from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOTrainer, GRPOConfig
 
 from data_prep import build_dataset
@@ -24,6 +25,7 @@ from reward import bfcl_reward_fn
 
 # Configurable via environment variables — set by run_pipeline.slurm
 MODEL_KEY      = os.environ.get("BFCL_MODEL_KEY",      "qwen3_8b")
+HF_MODEL       = os.environ.get("BFCL_HF_MODEL",       "Qwen/Qwen3-8B")
 SFT_CHECKPOINT = os.environ.get("BFCL_SFT_CHECKPOINT", f"checkpoints/{MODEL_KEY}/sft_final")
 OUTPUT_DIR     = f"checkpoints/{MODEL_KEY}/grpo"
 
@@ -33,22 +35,24 @@ def main():
     _, grpo_data = build_dataset(split=0.9)
     print(f"  {len(grpo_data)} GRPO examples")
 
-    # GRPOTrainer reads extra dataset columns and passes them as kwargs to reward_fn.
-    # We keep category, function, ground_truth so bfcl_reward_fn can use them.
     dataset = Dataset.from_list(grpo_data)
+
+    # Load base model then apply the SFT LoRA adapter.
+    # GRPOTrainer cannot load a PEFT adapter directory directly via model=path
+    # because the directory has no full model weights — only adapter weights.
+    print(f"Loading base model: {HF_MODEL}")
+    base_model = AutoModelForCausalLM.from_pretrained(
+        HF_MODEL,
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
+    )
+    print(f"Applying SFT adapter: {SFT_CHECKPOINT}")
+    # is_trainable=True keeps LoRA params unfrozen for continued GRPO training
+    model = PeftModel.from_pretrained(base_model, SFT_CHECKPOINT, is_trainable=True)
 
     tokenizer = AutoTokenizer.from_pretrained(SFT_CHECKPOINT)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-
-    lora_config = LoraConfig(
-        r=16,
-        lora_alpha=32,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-        lora_dropout=0.05,
-        bias="none",
-        task_type="CAUSAL_LM",
-    )
 
     config = GRPOConfig(
         output_dir=OUTPUT_DIR,
@@ -70,12 +74,12 @@ def main():
         report_to="none",                 # swap to "wandb" if you want tracking
     )
 
+    # No peft_config — model already has the SFT LoRA loaded with is_trainable=True
     trainer = GRPOTrainer(
-        model=SFT_CHECKPOINT,
+        model=model,
         reward_funcs=[bfcl_reward_fn],
         args=config,
         train_dataset=dataset,
-        peft_config=lora_config,
         processing_class=tokenizer,
     )
 
