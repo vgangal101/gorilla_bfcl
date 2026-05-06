@@ -20,8 +20,8 @@ fi
 
 conda activate bfcl_rl
 
-echo "Installing BFCL harness..."
-pip install -e berkeley-function-call-leaderboard/
+echo "Installing BFCL harness (with vLLM for evaluation)..."
+pip install -e "berkeley-function-call-leaderboard/[oss_eval_vllm]"
 
 echo "Installing RL training dependencies..."
 pip install \
