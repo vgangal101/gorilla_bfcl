@@ -5,6 +5,52 @@ Complements the step-by-step instructions in `README.md`.
 
 ---
 
+## The Three Phases
+
+### Phase 1 — SFT
+
+Supervised fine-tuning on BFCL ground-truth function call examples (non-live
+categories only). The model learns to produce valid function call syntax.
+
+Without SFT, GRPO starts blind — the model outputs random text, the AST
+checker always returns 0, there is no reward variance, and the policy gradient
+is zero. SFT ensures the model starts with at least partially parseable outputs
+so GRPO has a signal to learn from.
+
+### Phase 2 — GRPO
+
+RL fine-tuning using the BFCL AST checker as the reward signal. For each
+prompt, the trainer generates K=4 rollouts, scores each with `ast_checker`
+(1.0 if correct, 0.0 otherwise), computes group-relative advantages, and
+updates the policy via policy gradient.
+
+No learned reward model is needed — the benchmark's own scorer IS the reward
+function. The model is trained to internalise what LLM Modulo enforced at
+inference time (correct function name, arguments, types), but at 1× inference
+cost instead of up to 5× for LLM Modulo.
+
+### Phase 3 — Evaluation
+
+Standard BFCL benchmark run on the **live** (held-out) test categories. This
+is not a verifier — it is a measurement of how well the trained model
+generalises to out-of-distribution queries that were never seen during training.
+
+Steps:
+1. **Merge** — `merge_lora.py` fuses the GRPO LoRA adapter into the base model
+   weights. vLLM cannot serve a bare PEFT adapter directory.
+2. **Serve** — vLLM loads the merged model and exposes an OpenAI-compatible
+   HTTP endpoint at `localhost:8001`.
+3. **Generate** — `bfcl generate --skip-server-setup` sends each live test
+   prompt to vLLM and writes the raw model responses to `result/`.
+4. **Score** — `bfcl evaluate` runs the AST checker offline on those responses
+   and writes per-category scores to `score/`.
+
+vLLM is the inference engine, not the verifier. The verifier is `bfcl evaluate`.
+The live categories are used specifically because the model was trained on
+non-live — this is the proper out-of-distribution test of generalisation.
+
+---
+
 ## How vLLM Works in Phase 3
 
 Phase 3 does not run inference directly. It uses vLLM as a local
