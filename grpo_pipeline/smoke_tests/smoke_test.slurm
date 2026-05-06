@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=bfcl_rl_smoke
-#SBATCH --account=class_cse59818158spring2026
+#SBATCH --account=class_eee515598spring2026
 #SBATCH --partition=public
 #SBATCH --qos=class
 #SBATCH --gres=gpu:a100:1
