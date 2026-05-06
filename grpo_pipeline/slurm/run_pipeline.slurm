@@ -149,7 +149,7 @@ echo "vLLM PID: $VLLM_PID"
 
 # Wait for server ready
 echo "Waiting for vLLM server..."
-MAX_WAIT=300
+MAX_WAIT=900
 ELAPSED=0
 until curl -sf "http://localhost:${VLLM_PORT}/health" > /dev/null 2>&1; do
     if [ $ELAPSED -ge $MAX_WAIT ]; then
