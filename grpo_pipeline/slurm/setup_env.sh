@@ -20,18 +20,17 @@ fi
 
 conda activate bfcl_rl
 
-echo "Installing BFCL harness (with vLLM for evaluation)..."
-pip install -e "berkeley-function-call-leaderboard/[oss_eval_vllm]"
-
-echo "Installing RL training dependencies..."
+echo "Installing BFCL harness + vLLM + RL training dependencies..."
+# Single pip call so the resolver sees all constraints together.
+# Separate calls risk vllm==0.8.5's pinned deps being silently upgraded
+# by the second install, breaking vllm at runtime.
 pip install \
-    "transformers>=4.45" \
+    -e "berkeley-function-call-leaderboard/[oss_eval_vllm]" \
     "trl>=0.12" \
     "datasets>=2.20" \
     "peft>=0.12" \
     "accelerate>=0.34" \
-    "bitsandbytes>=0.43" \
-    "huggingface_hub>=0.24"
+    "bitsandbytes>=0.43"
 
 # Create log directory so SLURM can write output files on job start
 mkdir -p grpo_pipeline/slurm/logs

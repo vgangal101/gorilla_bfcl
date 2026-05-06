@@ -41,10 +41,13 @@ def main():
     # GRPOTrainer cannot load a PEFT adapter directory directly via model=path
     # because the directory has no full model weights — only adapter weights.
     print(f"Loading base model: {HF_MODEL}")
+    # No device_map — accelerate/DDP assigns each process its own GPU.
+    # device_map="auto" would spread the model across ALL visible GPUs inside
+    # each DDP worker (model parallelism), conflicting with DDP's expectation
+    # that each process holds the full model replica.
     base_model = AutoModelForCausalLM.from_pretrained(
         HF_MODEL,
         torch_dtype=torch.bfloat16,
-        device_map="auto",
     )
     print(f"Applying SFT adapter: {SFT_CHECKPOINT}")
     # is_trainable=True keeps LoRA params unfrozen for continued GRPO training
