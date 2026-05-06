@@ -108,7 +108,7 @@ fi
 VLLM_PORT=8001
 VLLM_LOG="grpo_pipeline/slurm/logs/vllm_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
 MERGED_DIR="checkpoints/${BFCL_MODEL_KEY}/merged"
-TEST_CATEGORIES="simple_python,simple_java,simple_javascript,parallel,multiple"
+TEST_CATEGORIES="live_simple,live_parallel,live_multiple,live_parallel_multiple"
 VLLM_PID=""
 
 # Ensure vLLM is killed on any exit (success, error, or signal).

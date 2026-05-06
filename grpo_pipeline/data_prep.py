@@ -19,6 +19,13 @@ TRAIN_CATEGORIES = [
     "multiple",
 ]
 
+# Questions confirmed to appear in both training and evaluation splits.
+# Identified by check_data_overlap.py — filtered from training to prevent
+# contamination. The question remains in the eval set (live_multiple).
+EXCLUDED_QUESTIONS: set[str] = {
+    "Find out the rewards for playing Fortnite on Playstation platform with different missions and trophies",
+}
+
 SYSTEM_PROMPT = (
     "You are a function calling assistant. Given a user question and available "
     "functions, output the correct function call(s).\n\n"
@@ -92,6 +99,8 @@ def build_dataset(split: float = 0.9) -> tuple[list[dict], list[dict]]:
 
         for i, entry in enumerate(entries):
             if entry["id"] not in gts:
+                continue
+            if entry["question"][0][0]["content"] in EXCLUDED_QUESTIONS:
                 continue
 
             record = {
