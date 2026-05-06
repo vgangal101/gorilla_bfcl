@@ -4,6 +4,7 @@ reward.py — Wraps the BFCL AST checker as a scalar reward signal for GRPO.
 The reward is 1.0 if the generated function call(s) pass ast_checker, else 0.0.
 """
 
+import ast as _ast
 import sys
 from pathlib import Path
 
@@ -22,18 +23,42 @@ LANG_MAP = {
 }
 
 
+def _get_func_name(node) -> str:
+    """Reconstruct function name from AST node (handles dotted names)."""
+    if isinstance(node, _ast.Name):
+        return node.id
+    if isinstance(node, _ast.Attribute):
+        return f"{_get_func_name(node.value)}.{node.attr}"
+    return ""
+
+
 def parse_model_output(text: str, language: Language) -> list[dict]:
     """
     Convert '[func(a=1, b=2)]' → [{"func": {"a": 1, "b": 2}}].
-    Delegates to BFCL's own AST parser so we don't reimplement it.
-    """
-    from bfcl_eval.model_handler.parser.ast_parser import parse_ast_from_string
 
+    Uses Python's built-in ast module — bfcl_eval has no public parser API
+    at a stable path, so we parse with stdlib and produce the dict format
+    that ast_checker expects.
+    Handles single calls, multiple calls (parallel), and dotted names.
+    """
     text = text.strip()
     if text.startswith("[") and text.endswith("]"):
         text = text[1:-1]
+    if not text.strip():
+        return []
     try:
-        return parse_ast_from_string(text, language)
+        # Wrap in a list so ast.parse handles comma-separated calls cleanly
+        tree = _ast.parse(f"[{text}]", mode="eval")
+        results = []
+        for elt in tree.body.elts:
+            if not isinstance(elt, _ast.Call):
+                return []
+            func_name = _get_func_name(elt.func)
+            if not func_name:
+                return []
+            args = {kw.arg: _ast.literal_eval(kw.value) for kw in elt.keywords}
+            results.append({func_name: args})
+        return results
     except Exception:
         return []
 
