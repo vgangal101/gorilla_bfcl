@@ -47,6 +47,11 @@ export TOKENIZERS_PARALLELISM=false
 
 mkdir -p "checkpoints/${BFCL_MODEL_KEY}"
 
+LOG_PREFIX="grpo_pipeline/slurm/logs"
+SFT_LOG="${LOG_PREFIX}/sft_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.out"
+GRPO_LOG="${LOG_PREFIX}/grpo_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.out"
+VLLM_LOG="${LOG_PREFIX}/eval_vllm_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.out"
+
 # ── Sanity check ─────────────────────────────────────────────────────────
 echo "GPU info:"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
@@ -108,10 +113,6 @@ if [ ! -d "$BFCL_GRPO_CHECKPOINT" ]; then
 fi
 
 VLLM_PORT=8001
-LOG_PREFIX="grpo_pipeline/slurm/logs"
-SFT_LOG="${LOG_PREFIX}/sft_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
-GRPO_LOG="${LOG_PREFIX}/grpo_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
-VLLM_LOG="${LOG_PREFIX}/eval_vllm_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
 MERGED_DIR="checkpoints/${BFCL_MODEL_KEY}/merged"
 TEST_CATEGORIES="live_simple,live_parallel,live_multiple,live_parallel_multiple"
 VLLM_PID=""

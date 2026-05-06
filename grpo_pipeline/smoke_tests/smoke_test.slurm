@@ -51,9 +51,9 @@ export TOKENIZERS_PARALLELISM=false
 mkdir -p "checkpoints/${BFCL_MODEL_KEY}"
 
 LOG_PREFIX="grpo_pipeline/slurm/logs"
-SMOKE_SFT_LOG="${LOG_PREFIX}/smoke_sft_${SLURM_JOB_ID}.log"
-SMOKE_GRPO_LOG="${LOG_PREFIX}/smoke_grpo_${SLURM_JOB_ID}.log"
-VLLM_LOG="${LOG_PREFIX}/smoke_eval_vllm_${SLURM_JOB_ID}.log"
+SMOKE_SFT_LOG="${LOG_PREFIX}/smoke_sft_${SLURM_JOB_ID}.out"
+SMOKE_GRPO_LOG="${LOG_PREFIX}/smoke_grpo_${SLURM_JOB_ID}.out"
+VLLM_LOG="${LOG_PREFIX}/smoke_eval_vllm_${SLURM_JOB_ID}.out"
 
 echo "GPU info:"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
