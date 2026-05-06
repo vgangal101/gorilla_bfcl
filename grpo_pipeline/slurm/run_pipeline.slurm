@@ -109,22 +109,30 @@ fi
 
 VLLM_PORT=8001
 VLLM_LOG="grpo_pipeline/slurm/logs/vllm_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
+MERGED_DIR="checkpoints/${BFCL_MODEL_KEY}/merged"
 TEST_CATEGORIES="simple_python,simple_java,simple_javascript,parallel_function,multiple_function"
 VLLM_PID=""
 
 # Ensure vLLM is killed on any exit (success, error, or signal).
-# Without this, set -e would exit on bfcl generate failure and leave
-# vLLM consuming GPUs for the rest of the walltime.
 trap '[[ -n "$VLLM_PID" ]] && kill "$VLLM_PID" 2>/dev/null || true' EXIT
 
-# Start vLLM server with the LoRA checkpoint.
-# Use $BFCL_HF_MODEL as the LoRA alias so bfcl generate sees a registered
-# model name — grpo_* names are not in BFCL's supported_models list.
+# Merge LoRA adapter into base model weights before serving.
+# Avoids a vLLM name collision bug where --lora-modules alias equals the
+# base model name, causing ambiguous routing or startup errors.
+echo "Merging GRPO LoRA into base model..."
+python grpo_pipeline/merge_lora.py \
+    "$BFCL_HF_MODEL" \
+    "$BFCL_GRPO_CHECKPOINT" \
+    "$MERGED_DIR"
+echo "Merge complete: $MERGED_DIR"
+
+# Start vLLM server on the merged model.
+# --served-model-name makes vLLM answer to the registered BFCL model name
+# so bfcl generate --model $BFCL_HF_MODEL routes to the GRPO-trained weights.
 echo "Starting vLLM server..."
 python -m vllm.entrypoints.openai.api_server \
-    --model "$BFCL_HF_MODEL" \
-    --enable-lora \
-    --lora-modules "${BFCL_HF_MODEL}=${BFCL_GRPO_CHECKPOINT}" \
+    --model "$MERGED_DIR" \
+    --served-model-name "$BFCL_HF_MODEL" \
     --port "$VLLM_PORT" \
     --dtype bfloat16 \
     --max-model-len 4096 \
