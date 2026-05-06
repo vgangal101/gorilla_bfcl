@@ -53,3 +53,8 @@ sol_gaudi/config.env
 
 # Claude Code local memory/settings
 .claude/
+
+################## bfcl_rl (GRPO training pipeline) ##########################
+# Ignore trained model checkpoints (can be GBs); keep the directory itself
+checkpoints/*/
+!checkpoints/.gitkeep

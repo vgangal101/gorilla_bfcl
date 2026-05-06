@@ -18,10 +18,13 @@ grpo_pipeline/
 ├── grpo_train.py      Phase 2 — GRPO fine-tuning with K=4 rollouts per prompt
 ├── hf_job.py          Submit the full pipeline as a HuggingFace Job on A100
 └── slurm/
-    ├── setup_env.sh   One-time conda env setup (run once on login node)
+    ├── setup_env.sh       One-time conda env setup (run once on login node)
     ├── sft_train.slurm    SBATCH script for SFT phase
     ├── grpo_train.slurm   SBATCH script for GRPO phase
-    └── logs/              Job stdout/stderr land here (auto-created)
+    ├── evaluate.slurm     SBATCH script — serve checkpoint, bfcl generate, bfcl evaluate
+    └── logs/              Job stdout/stderr land here
+
+checkpoints/           Trained model weights land here (gitignored except .gitkeep)
 ```
 
 All scripts are run from the **repo root** (`gorilla_bfcl/`), not from inside `grpo_pipeline/`.
@@ -301,32 +304,32 @@ The job runs SFT → GRPO → pushes the final checkpoint to your HF Hub repo. M
 
 ---
 
-### Step 6 — Evaluate with BFCL
+### Step 6 — Evaluate on SOL (SLURM)
 
-Once training is done, run the standard BFCL evaluation against the saved checkpoint. The trained model is served via vLLM just like the baseline runs.
+Submit the evaluation job from the repo root. It starts a vLLM server with the
+GRPO LoRA checkpoint, runs `bfcl generate`, stops the server, then runs
+`bfcl evaluate` — all in one job.
 
 ```bash
-cd berkeley-function-call-leaderboard
+# Submit immediately after GRPO finishes:
+sbatch grpo_pipeline/slurm/evaluate.slurm
 
-# Start vLLM server pointing at the GRPO checkpoint
-python -m vllm.entrypoints.openai.api_server \
-    --model ../checkpoints/grpo_final \
-    --port 8001 &
-
-# Generate with skip-server-setup (server already running)
-REMOTE_OPENAI_BASE_URL=http://localhost:8001/v1 \
-bfcl generate \
-    --model grpo_qwen3_8b \
-    --test-category simple_python,simple_java,simple_javascript,parallel_function,multiple_function \
-    --skip-server-setup
-
-# Score
-bfcl evaluate \
-    --model grpo_qwen3_8b \
-    --test-category simple_python,simple_java,simple_javascript,parallel_function,multiple_function
+# Or chain automatically after GRPO:
+sbatch --dependency=afterok:<GRPO_JOB_ID> grpo_pipeline/slurm/evaluate.slurm
 ```
 
-Results land in `score/grpo_qwen3_8b/` — compare directly against `score/Qwen_Qwen3-8B/` (baseline) and `score/` from your LLM Modulo runs.
+Monitor:
+```bash
+tail -f grpo_pipeline/slurm/logs/eval_<JOBID>.out
+```
+
+Results land in:
+- `berkeley-function-call-leaderboard/result/grpo_qwen3_8b/` — raw generations
+- `berkeley-function-call-leaderboard/score/grpo_qwen3_8b/` — scores
+
+Compare directly against:
+- `score/Qwen_Qwen3-8B/` — vanilla baseline
+- `result_modulo/` — LLM Modulo runs (if available)
 
 ---
 
