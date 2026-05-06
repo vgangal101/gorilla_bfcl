@@ -79,7 +79,7 @@ JOB_ID=$(sbatch \
     --mem="$MEM" \
     --cpus-per-task="$CPUS" \
     --time="$TIME" \
-    --export="BFCL_MODEL_KEY=${MODEL_KEY},BFCL_HF_MODEL=${HF_MODEL},BFCL_NUM_GPUS=${NUM_GPUS}" \
+    --export="ALL,BFCL_MODEL_KEY=${MODEL_KEY},BFCL_HF_MODEL=${HF_MODEL},BFCL_NUM_GPUS=${NUM_GPUS}" \
     --parsable \
     grpo_pipeline/slurm/run_pipeline.slurm)
 
