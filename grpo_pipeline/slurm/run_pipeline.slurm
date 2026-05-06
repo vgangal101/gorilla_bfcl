@@ -111,12 +111,14 @@ VLLM_PORT=8001
 VLLM_LOG="grpo_pipeline/slurm/logs/vllm_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
 TEST_CATEGORIES="simple_python,simple_java,simple_javascript,parallel_function,multiple_function"
 
-# Start vLLM server with the LoRA checkpoint
+# Start vLLM server with the LoRA checkpoint.
+# Use $BFCL_HF_MODEL as the LoRA alias so bfcl generate sees a registered
+# model name — grpo_* names are not in BFCL's supported_models list.
 echo "Starting vLLM server..."
 python -m vllm.entrypoints.openai.api_server \
     --model "$BFCL_HF_MODEL" \
     --enable-lora \
-    --lora-modules "${BFCL_EVAL_MODEL}=${BFCL_GRPO_CHECKPOINT}" \
+    --lora-modules "${BFCL_HF_MODEL}=${BFCL_GRPO_CHECKPOINT}" \
     --port "$VLLM_PORT" \
     --dtype bfloat16 \
     --max-model-len 4096 \
@@ -144,11 +146,12 @@ until curl -sf "http://localhost:${VLLM_PORT}/health" > /dev/null 2>&1; do
 done
 echo "vLLM server ready."
 
-# bfcl generate
+# bfcl generate — use the registered base model name; vLLM routes requests
+# to the GRPO LoRA adapter transparently via the alias set above.
 cd berkeley-function-call-leaderboard
 REMOTE_OPENAI_BASE_URL="http://localhost:${VLLM_PORT}/v1" \
 bfcl generate \
-    --model "$BFCL_EVAL_MODEL" \
+    --model "$BFCL_HF_MODEL" \
     --test-category "$TEST_CATEGORIES" \
     --skip-server-setup \
     --num-threads 4
@@ -162,7 +165,7 @@ echo "vLLM server stopped."
 # bfcl evaluate
 cd berkeley-function-call-leaderboard
 bfcl evaluate \
-    --model "$BFCL_EVAL_MODEL" \
+    --model "$BFCL_HF_MODEL" \
     --test-category "$TEST_CATEGORIES"
 cd ..
 
@@ -170,6 +173,6 @@ echo ""
 echo "=========================================="
 echo "Pipeline complete: $(date)"
 echo "Model:       $BFCL_MODEL_KEY"
-echo "Scores:      berkeley-function-call-leaderboard/score/${BFCL_EVAL_MODEL}/"
+echo "Scores:      berkeley-function-call-leaderboard/score/${BFCL_HF_MODEL//\//_}/"
 echo "Checkpoint:  $BFCL_GRPO_CHECKPOINT"
 echo "=========================================="

@@ -65,17 +65,15 @@ def compute_reward(
 
 # ---------------------------------------------------------------------------
 # TRL-compatible reward function
-# GRPOTrainer calls: reward_fn(prompts, completions, **dataset_columns)
+# GRPOTrainer (TRL 0.12+) calls: reward_fn(completions, **dataset_columns)
+# completions is the only positional argument; dataset columns come as kwargs.
 # ---------------------------------------------------------------------------
 
-def bfcl_reward_fn(
-    prompts: list[str],
-    completions: list[str],
-    category: list[str],
-    function: list[list[dict]],
-    ground_truth: list[list[dict]],
-    **kwargs,
-) -> list[float]:
+def bfcl_reward_fn(completions: list[str], **kwargs) -> list[float]:
+    category     = kwargs["category"]
+    function     = kwargs["function"]
+    ground_truth = kwargs["ground_truth"]
+
     rewards = []
     for completion, cat, fn_schemas, gt in zip(
         completions, category, function, ground_truth
