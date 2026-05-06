@@ -51,6 +51,53 @@ non-live — this is the proper out-of-distribution test of generalisation.
 
 ---
 
+## LoRA, the Base Model, and Merging
+
+### What is a LoRA adapter?
+
+LoRA (Low-Rank Adaptation) fine-tunes a large model without updating all its
+weights. Instead of modifying the full weight matrices (for Qwen3-8B that is
+~16 GB of parameters), it freezes the original weights and adds small trainable
+"delta" matrices alongside specific layers. Each delta is factored into two tiny
+matrices A and B, where the actual update is:
+
+```
+W_new = W_original + B × A
+```
+
+Because rank r is small (r=16 in SFT, r=4 in the smoke test), the adapter is
+~50–100 MB instead of 16 GB. That is why LoRA is called parameter-efficient.
+
+### What is the base model?
+
+`Qwen/Qwen3-8B` — Alibaba's pretrained 8B transformer, before any fine-tuning.
+It lives in the HF cache at `/scratch/$USER/hf_cache`. Both SFT and GRPO train
+LoRA adapters on top of it, leaving its weights completely untouched.
+
+One important nuance: GRPO loads `Qwen/Qwen3-8B` + the SFT adapter
+(`is_trainable=True`) and continues training the *same* LoRA. So `grpo_final/`
+is a single LoRA adapter relative to `Qwen/Qwen3-8B` that was initialised from
+SFT then further updated by GRPO — not two stacked adapters.
+
+### Why merge, and how
+
+vLLM expects a plain HuggingFace model directory with full weight files. It does
+not know what a PEFT adapter is. `merge_lora.py` resolves this by computing:
+
+```
+W_merged = W_base + B × A   (for every LoRA layer)
+```
+
+This is `peft_model.merge_and_unload()`. The result is a standard ~16 GB model
+with the fine-tuning baked directly into the weights — no adapter concept
+remaining. `save_pretrained()` writes it as a normal HF model that vLLM, plain
+transformers, or anything else can load directly.
+
+The direction matters: the adapter (small delta) is folded **into** the base
+model (large original), not the other way around.
+
+---
+
 ## How vLLM Works in Phase 3
 
 Phase 3 does not run inference directly. It uses vLLM as a local
