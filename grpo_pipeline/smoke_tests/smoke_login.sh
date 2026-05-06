@@ -2,11 +2,14 @@
 # smoke_login.sh — Login-node smoke tests. No GPU required.
 # Run this before submitting any SLURM jobs to catch import and data issues early.
 #
-# Usage (from repo root, with bfcl_rl conda env active):
-#   conda activate bfcl_rl
+# Usage (from repo root):
 #   bash grpo_pipeline/smoke_tests/smoke_login.sh
 
 set -euo pipefail
+
+module load mamba/latest
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate bfcl_rl
 
 PASS=0
 FAIL=0

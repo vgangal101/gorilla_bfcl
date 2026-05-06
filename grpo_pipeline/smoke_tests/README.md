@@ -7,12 +7,13 @@ All smoke test files live here — nothing touches the main pipeline code.
 
 ## Step 1 — Login node checks (no GPU, instant)
 
-Run from the repo root with `bfcl_rl` env active:
+Run from the repo root:
 
 ```bash
-conda activate bfcl_rl
 bash grpo_pipeline/smoke_tests/smoke_login.sh
 ```
+
+(The script loads the mamba module and activates `bfcl_rl` itself.)
 
 Checks:
 - All required packages importable (torch, trl, peft, vllm, bfcl_eval, etc.)
