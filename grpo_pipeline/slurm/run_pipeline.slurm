@@ -159,8 +159,8 @@ until curl -sf "http://localhost:${VLLM_PORT}/health" > /dev/null 2>&1; do
 done
 echo "vLLM server ready."
 
-# bfcl generate — use the registered base model name; vLLM routes requests
-# to the GRPO LoRA adapter transparently via the alias set above.
+# bfcl generate — model name matches --served-model-name so vLLM routes
+# requests to the merged GRPO checkpoint.
 cd berkeley-function-call-leaderboard
 REMOTE_OPENAI_BASE_URL="http://localhost:${VLLM_PORT}/v1" \
 bfcl generate \
