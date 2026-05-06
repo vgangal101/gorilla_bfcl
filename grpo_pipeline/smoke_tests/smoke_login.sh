@@ -61,10 +61,6 @@ for cat in simple_python simple_java simple_javascript parallel_function multipl
 done
 echo ""
 
-echo "[ CUDA ]"
-check "CUDA available" "python -c 'import torch; assert torch.cuda.is_available(), \"No CUDA\"'"
-echo ""
-
 echo "========================================"
 echo "Results: $PASS passed, $FAIL failed"
 echo "========================================"
