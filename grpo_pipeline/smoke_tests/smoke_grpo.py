@@ -23,6 +23,8 @@ from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOTrainer, GRPOConfig
 
+import json as _json
+
 from data_prep import build_dataset
 from reward import bfcl_reward_fn
 
@@ -42,6 +44,10 @@ def main():
     _, grpo_data = build_dataset(split=0.9)
     grpo_data = grpo_data[:4]
     print(f"  Using {len(grpo_data)} examples")
+
+    for d in grpo_data:
+        d["function"]     = _json.dumps(d["function"])
+        d["ground_truth"] = _json.dumps(d["ground_truth"])
 
     dataset = Dataset.from_list(grpo_data)
 

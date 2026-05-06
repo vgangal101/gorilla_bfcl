@@ -36,7 +36,8 @@ def main():
     def format_example(ex):
         return {"text": ex["prompt"] + "\n" + ex["completion"]}
 
-    dataset = Dataset.from_list(sft_data).map(format_example, remove_columns=list(sft_data[0].keys()))
+    sft_simple = [{"prompt": d["prompt"], "completion": d["completion"]} for d in sft_data]
+    dataset = Dataset.from_list(sft_simple).map(format_example, remove_columns=["prompt", "completion"])
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
     if tokenizer.pad_token is None:

@@ -20,6 +20,8 @@ from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOTrainer, GRPOConfig
 
+import json as _json
+
 from data_prep import build_dataset
 from reward import bfcl_reward_fn
 
@@ -34,6 +36,12 @@ def main():
     print("Loading BFCL data...")
     _, grpo_data = build_dataset(split=0.9)
     print(f"  {len(grpo_data)} GRPO examples")
+
+    # Serialize nested dicts to JSON strings so PyArrow can build a consistent
+    # Arrow schema. reward.py deserializes them back before calling ast_checker.
+    for d in grpo_data:
+        d["function"]     = _json.dumps(d["function"])
+        d["ground_truth"] = _json.dumps(d["ground_truth"])
 
     dataset = Dataset.from_list(grpo_data)
 

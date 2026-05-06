@@ -95,9 +95,12 @@ def compute_reward(
 # ---------------------------------------------------------------------------
 
 def bfcl_reward_fn(completions: list[str], **kwargs) -> list[float]:
+    import json as _json
     category     = kwargs["category"]
-    function     = kwargs["function"]
-    ground_truth = kwargs["ground_truth"]
+    # Deserialize if stored as JSON strings (grpo_train.py serializes them
+    # so PyArrow can handle the nested dict schema)
+    function     = [_json.loads(f) if isinstance(f, str) else f for f in kwargs["function"]]
+    ground_truth = [_json.loads(g) if isinstance(g, str) else g for g in kwargs["ground_truth"]]
 
     rewards = []
     for completion, cat, fn_schemas, gt in zip(
