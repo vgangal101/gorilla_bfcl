@@ -8,7 +8,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=80G
-#SBATCH --time=01:00:00
+#SBATCH --time=01:30:00
 #SBATCH --output=grpo_pipeline/slurm/logs/smoke_eval_%j.out
 #SBATCH --error=grpo_pipeline/slurm/logs/smoke_eval_%j.err
 #
@@ -110,7 +110,7 @@ python -m vllm.entrypoints.openai.api_server \
 
 VLLM_PID=$!
 
-MAX_WAIT=600
+MAX_WAIT=900
 ELAPSED=0
 until curl -sf "http://localhost:${VLLM_PORT}/health" > /dev/null 2>&1; do
     if [ $ELAPSED -ge $MAX_WAIT ]; then
