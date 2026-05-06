@@ -9,6 +9,9 @@ set -euo pipefail
 
 module load mamba/latest
 
+# Initialize conda for non-interactive shell
+source "$(conda info --base)/etc/profile.d/conda.sh"
+
 # Create dedicated conda env for RL training (separate from bfcl_gaudi)
 if ! conda env list | grep -q "bfcl_rl"; then
     echo "Creating bfcl_rl conda environment..."
@@ -29,5 +32,8 @@ pip install \
     "accelerate>=0.34" \
     "bitsandbytes>=0.43" \
     "huggingface_hub>=0.24"
+
+# Create log directory so SLURM can write output files on job start
+mkdir -p grpo_pipeline/slurm/logs
 
 echo "Done. Activate with: conda activate bfcl_rl"

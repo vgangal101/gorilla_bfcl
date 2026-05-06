@@ -29,6 +29,7 @@ echo "=========================================="
 
 # ── Environment ────────────────────────────────────────────────────────
 module load mamba/latest
+source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate bfcl_rl
 
 export HF_HOME="/scratch/${USER}/hf_cache"
@@ -36,9 +37,7 @@ export TOKENIZERS_PARALLELISM=false
 export CUDA_VISIBLE_DEVICES=0
 
 # ── Paths ───────────────────────────────────────────────────────────────
-REPO_ROOT="$(pwd)"
-LOG_DIR="grpo_pipeline/slurm/logs"
-mkdir -p "$LOG_DIR" checkpoints/sft
+mkdir -p checkpoints/sft
 
 # ── Sanity check ────────────────────────────────────────────────────────
 echo "GPU info:"
