@@ -50,6 +50,11 @@ export TOKENIZERS_PARALLELISM=false
 
 mkdir -p "checkpoints/${BFCL_MODEL_KEY}"
 
+LOG_PREFIX="grpo_pipeline/slurm/logs"
+SMOKE_SFT_LOG="${LOG_PREFIX}/smoke_sft_${SLURM_JOB_ID}.log"
+SMOKE_GRPO_LOG="${LOG_PREFIX}/smoke_grpo_${SLURM_JOB_ID}.log"
+VLLM_LOG="${LOG_PREFIX}/smoke_eval_vllm_${SLURM_JOB_ID}.log"
+
 echo "GPU info:"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 echo "Python: $(which python)"
@@ -61,9 +66,10 @@ echo ""
 echo "══ SMOKE PHASE 1: SFT (3 steps) ══"
 echo "Started: $(date)"
 
-python grpo_pipeline/smoke_tests/smoke_sft.py
+python grpo_pipeline/smoke_tests/smoke_sft.py 2>&1 | tee "$SMOKE_SFT_LOG"
 
 echo "SFT smoke done: $(date)"
+echo "Log: $SMOKE_SFT_LOG"
 
 # ════════════════════════════════════════════════════════════════════════
 # PHASE 2 — GRPO (4 examples, 2 steps, K=2)
@@ -72,9 +78,10 @@ echo ""
 echo "══ SMOKE PHASE 2: GRPO (2 steps, K=2) ══"
 echo "Started: $(date)"
 
-python grpo_pipeline/smoke_tests/smoke_grpo.py
+python grpo_pipeline/smoke_tests/smoke_grpo.py 2>&1 | tee "$SMOKE_GRPO_LOG"
 
 echo "GRPO smoke done: $(date)"
+echo "Log: $SMOKE_GRPO_LOG"
 
 # ════════════════════════════════════════════════════════════════════════
 # PHASE 3 — MERGE + vLLM + BFCL EVAL (5 test cases, simple_python only)
@@ -87,7 +94,6 @@ SMOKE_GRPO_CHECKPOINT="checkpoints/${BFCL_MODEL_KEY}/smoke_grpo_final"
 SMOKE_MERGED_DIR="checkpoints/${BFCL_MODEL_KEY}/smoke_merged"
 VLLM_PORT=8002         # different port from full pipeline to avoid conflicts
 VLLM_PID=""
-VLLM_LOG="grpo_pipeline/slurm/logs/smoke_vllm_${SLURM_JOB_ID}.log"
 
 trap '[[ -n "$VLLM_PID" ]] && kill "$VLLM_PID" 2>/dev/null || true' EXIT
 
@@ -163,7 +169,12 @@ echo ""
 echo "========================================"
 echo "Smoke test COMPLETE: $(date)"
 echo "All 3 phases passed."
-echo "Scores: berkeley-function-call-leaderboard/score/${BFCL_HF_MODEL//\//_}/"
+echo ""
+echo "Phase logs:"
+echo "  SFT:      $SMOKE_SFT_LOG"
+echo "  GRPO:     $SMOKE_GRPO_LOG"
+echo "  vLLM:     $VLLM_LOG"
+echo "Scores:     berkeley-function-call-leaderboard/score/${BFCL_HF_MODEL//\//_}/"
 echo "========================================"
 echo ""
 echo "If all phases completed without error, the full pipeline is safe to run:"

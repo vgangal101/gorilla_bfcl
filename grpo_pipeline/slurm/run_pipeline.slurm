@@ -71,10 +71,11 @@ echo ""
 echo "══════════════ PHASE 1: SFT ══════════════"
 echo "Started: $(date)"
 
-run_training grpo_pipeline/sft_train.py
+run_training grpo_pipeline/sft_train.py 2>&1 | tee "$SFT_LOG"
 
 echo "SFT complete: $(date)"
 echo "Checkpoint: $BFCL_SFT_CHECKPOINT"
+echo "Log: $SFT_LOG"
 
 # ════════════════════════════════════════════════════════════════════════
 # PHASE 2 — GRPO
@@ -88,10 +89,11 @@ if [ ! -d "$BFCL_SFT_CHECKPOINT" ]; then
     exit 1
 fi
 
-run_training grpo_pipeline/grpo_train.py
+run_training grpo_pipeline/grpo_train.py 2>&1 | tee "$GRPO_LOG"
 
 echo "GRPO complete: $(date)"
 echo "Checkpoint: $BFCL_GRPO_CHECKPOINT"
+echo "Log: $GRPO_LOG"
 
 # ════════════════════════════════════════════════════════════════════════
 # PHASE 3 — EVALUATE
@@ -106,7 +108,10 @@ if [ ! -d "$BFCL_GRPO_CHECKPOINT" ]; then
 fi
 
 VLLM_PORT=8001
-VLLM_LOG="grpo_pipeline/slurm/logs/vllm_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
+LOG_PREFIX="grpo_pipeline/slurm/logs"
+SFT_LOG="${LOG_PREFIX}/sft_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
+GRPO_LOG="${LOG_PREFIX}/grpo_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
+VLLM_LOG="${LOG_PREFIX}/eval_vllm_${BFCL_MODEL_KEY}_${SLURM_JOB_ID}.log"
 MERGED_DIR="checkpoints/${BFCL_MODEL_KEY}/merged"
 TEST_CATEGORIES="live_simple,live_parallel,live_multiple,live_parallel_multiple"
 VLLM_PID=""
@@ -189,6 +194,11 @@ echo ""
 echo "=========================================="
 echo "Pipeline complete: $(date)"
 echo "Model:       $BFCL_MODEL_KEY"
-echo "Scores:      berkeley-function-call-leaderboard/score/${BFCL_HF_MODEL//\//_}/"
-echo "Checkpoint:  $BFCL_GRPO_CHECKPOINT"
+echo ""
+echo "Phase logs:"
+echo "  SFT:      $SFT_LOG"
+echo "  GRPO:     $GRPO_LOG"
+echo "  vLLM:     $VLLM_LOG"
+echo "Scores:     berkeley-function-call-leaderboard/score/${BFCL_HF_MODEL//\//_}/"
+echo "Checkpoint: $BFCL_GRPO_CHECKPOINT"
 echo "=========================================="
