@@ -134,7 +134,7 @@ echo "vLLM server ready."
 
 # Populate test_case_ids_to_generate.json with 5 simple_python IDs
 cat > berkeley-function-call-leaderboard/test_case_ids_to_generate.json <<'EOF'
-["simple_python_0", "simple_python_1", "simple_python_2", "simple_python_3", "simple_python_4"]
+{"simple_python": ["simple_python_0", "simple_python_1", "simple_python_2", "simple_python_3", "simple_python_4"]}
 EOF
 
 # bfcl generate — 5 test cases only
