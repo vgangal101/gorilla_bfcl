@@ -70,7 +70,7 @@ def main():
         gradient_accumulation_steps=1,
         learning_rate=5e-6,
         num_generations=2,          # K=2 rollouts (minimum for group-relative)
-        max_new_tokens=64,
+        max_completion_length=64,
         temperature=0.8,
         beta=0.01,
         logging_steps=1,

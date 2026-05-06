@@ -75,7 +75,7 @@ def main():
         warmup_ratio=0.05,
         # GRPO-specific
         num_generations=4,                # K rollouts per prompt
-        max_new_tokens=256,
+        max_completion_length=256,
         temperature=0.8,                  # needs variance for group rewards
         beta=0.01,                        # KL penalty vs reference (SFT) policy
         # Logging / saving
