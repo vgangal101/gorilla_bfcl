@@ -12,11 +12,16 @@ The trained model is evaluated with the same `bfcl evaluate` command used for ba
 
 ```
 grpo_pipeline/
-├── data_prep.py    Extract (prompt, ground_truth) pairs from BFCL JSONL files
-├── reward.py       Wrap bfcl_eval ast_checker as a 0/1 scalar reward for GRPOTrainer
-├── sft_train.py    Phase 1 — LoRA SFT warm-start on Qwen3-8B
-├── grpo_train.py   Phase 2 — GRPO fine-tuning with K=4 rollouts per prompt
-└── hf_job.py       Submit the full pipeline as a HuggingFace Job on A100
+├── data_prep.py       Extract (prompt, ground_truth) pairs from BFCL JSONL files
+├── reward.py          Wrap bfcl_eval ast_checker as a 0/1 scalar reward for GRPOTrainer
+├── sft_train.py       Phase 1 — LoRA SFT warm-start on Qwen3-8B
+├── grpo_train.py      Phase 2 — GRPO fine-tuning with K=4 rollouts per prompt
+├── hf_job.py          Submit the full pipeline as a HuggingFace Job on A100
+└── slurm/
+    ├── setup_env.sh   One-time conda env setup (run once on login node)
+    ├── sft_train.slurm    SBATCH script for SFT phase
+    ├── grpo_train.slurm   SBATCH script for GRPO phase
+    └── logs/              Job stdout/stderr land here (auto-created)
 ```
 
 All scripts are run from the **repo root** (`gorilla_bfcl/`), not from inside `grpo_pipeline/`.
@@ -74,11 +79,12 @@ pip install "transformers>=4.45" "trl>=0.12" "datasets>=2.20" "peft>=0.12" "acce
 
 | Option | Notes |
 |---|---|
-| **HuggingFace Jobs (recommended)** | Single A100-80G; handles Qwen3-8B LoRA comfortably. Use `hf_job.py`. |
-| **Local / SOL NVIDIA** | Single A100-80G or 2×A100-40G with `accelerate` multi-GPU. |
-| **SOL Gaudi partition** | Not supported — TRL's GRPOTrainer uses CUDA-specific kernels. Use Gaudi only for inference, not GRPO training. |
+| **SOL `general` partition — H100 (recommended)** | Single H100-80G; ~3× faster than A100 for bf16 training. Use `sft_train.slurm` / `grpo_train.slurm`. |
+| **SOL `public` partition — A100** | 52 nodes available, reliable fallback. Change `--partition=general --gres=gpu:h100:1` to `--partition=public --gres=gpu:a100:1` in the slurm scripts. |
+| **HuggingFace Jobs** | Single A100-80G on cloud; no queue wait; use `hf_job.py`. |
+| **SOL Gaudi partition** | Not supported — TRL's GRPOTrainer uses CUDA-specific kernels. Gaudi is inference-only in this project. |
 
-Minimum GPU memory for Qwen3-8B with LoRA (rank 16): **~40 GB** (fits on one A100-80G or 2×A100-40G).
+Minimum GPU memory for Qwen3-8B with LoRA (rank 16): **~40 GB** (fits on one H100-80G or A100-80G).
 
 ### HuggingFace token (for HF Jobs path)
 
@@ -208,7 +214,72 @@ What to expect:
 
 ---
 
-### Step 5 (Alternative) — Submit as HuggingFace Job
+### Step 5 — Run on ASU SOL (SLURM)
+
+This is the recommended path if you have access to SOL's `general` partition.
+All commands run from the repo root on a **SOL login node**.
+
+**One-time setup (do this before your first job):**
+
+```bash
+cd /scratch/$USER/gorilla_bfcl   # or wherever the repo lives on SOL
+bash grpo_pipeline/slurm/setup_env.sh
+```
+
+This creates the `bfcl_rl` conda env and installs all training dependencies.
+Takes ~5 minutes. Only needs to be run once.
+
+**Submit SFT:**
+
+```bash
+sbatch grpo_pipeline/slurm/sft_train.slurm
+```
+
+Note the job ID printed (e.g. `Submitted batch job 12345678`).
+
+**Submit GRPO — chained to start automatically after SFT finishes:**
+
+```bash
+# Replace 12345678 with your actual SFT job ID
+sbatch --dependency=afterok:12345678 grpo_pipeline/slurm/grpo_train.slurm
+```
+
+Or submit independently if SFT is already done:
+
+```bash
+sbatch grpo_pipeline/slurm/grpo_train.slurm
+```
+
+**Monitor jobs:**
+
+```bash
+squeue -u $USER                          # see queue status
+tail -f grpo_pipeline/slurm/logs/sft_<JOBID>.out   # live SFT log
+tail -f grpo_pipeline/slurm/logs/grpo_<JOBID>.out  # live GRPO log
+```
+
+**If H100s are unavailable** (queue full), switch to A100 on the `public` partition.
+Edit the top of the `.slurm` file and change:
+```bash
+#SBATCH --partition=general
+#SBATCH --gres=gpu:h100:1
+```
+to:
+```bash
+#SBATCH --partition=public
+#SBATCH --gres=gpu:a100:1
+```
+
+**Expected runtimes on H100:**
+
+| Phase | Time |
+|---|---|
+| SFT (2 epochs, ~1500 examples) | ~1–2 hours |
+| GRPO (3 epochs, ~170 examples, K=4) | ~4–6 hours |
+
+---
+
+### Step 5b (Alternative) — Submit as HuggingFace Job
 
 If you do not have local A100 access, use `hf_job.py` to run the full pipeline on HF's infrastructure.
 
