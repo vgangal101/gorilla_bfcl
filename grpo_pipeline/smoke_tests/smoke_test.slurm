@@ -113,12 +113,13 @@ python -m vllm.entrypoints.openai.api_server \
     --dtype bfloat16 \
     --max-model-len 2048 \
     --gpu-memory-utilization 0.85 \
+    --enforce-eager \
     > "$VLLM_LOG" 2>&1 &
 
 VLLM_PID=$!
 
 # Wait for server ready
-MAX_WAIT=300
+MAX_WAIT=600
 ELAPSED=0
 until curl -sf "http://localhost:${VLLM_PORT}/health" > /dev/null 2>&1; do
     if [ $ELAPSED -ge $MAX_WAIT ]; then
