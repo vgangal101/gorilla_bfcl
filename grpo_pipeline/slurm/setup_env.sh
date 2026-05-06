@@ -9,16 +9,13 @@ set -euo pipefail
 
 module load mamba/latest
 
-# Initialize conda for non-interactive shell
-source "$(conda info --base)/etc/profile.d/conda.sh"
-
 # Create dedicated conda env for RL training (separate from bfcl_gaudi)
 if ! conda env list | grep -q "bfcl_rl"; then
     echo "Creating bfcl_rl conda environment..."
     mamba create -n bfcl_rl python=3.11 -y
 fi
 
-conda activate bfcl_rl
+source activate bfcl_rl
 
 echo "Installing BFCL harness + vLLM + RL training dependencies..."
 # Single pip call so the resolver sees all constraints together.
@@ -35,4 +32,4 @@ pip install \
 # Create log directory so SLURM can write output files on job start
 mkdir -p grpo_pipeline/slurm/logs
 
-echo "Done. Activate with: conda activate bfcl_rl"
+echo "Done. Activate with: source activate bfcl_rl"

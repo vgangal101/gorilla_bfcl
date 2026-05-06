@@ -8,8 +8,7 @@
 set -euo pipefail
 
 module load mamba/latest
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate bfcl_rl
+source activate bfcl_rl
 
 PASS=0
 FAIL=0

@@ -43,8 +43,7 @@ echo "========================================"
 
 # ── Environment ─────────────────────────────────────────────────────────
 module load mamba/latest
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate bfcl_rl
+source activate bfcl_rl
 
 export HF_HOME="/scratch/${USER}/hf_cache"
 export TOKENIZERS_PARALLELISM=false
