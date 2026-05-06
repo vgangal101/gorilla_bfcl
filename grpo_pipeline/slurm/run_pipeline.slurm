@@ -161,12 +161,16 @@ echo "vLLM server ready."
 
 # bfcl generate — model name matches --served-model-name so vLLM routes
 # requests to the merged GRPO checkpoint.
+# --allow-overwrite is required: without it, bfcl generate silently skips
+# any test IDs where result files already exist (e.g. from a baseline run)
+# and mixes baseline outputs with GRPO outputs in the same result directory.
 cd berkeley-function-call-leaderboard
 REMOTE_OPENAI_BASE_URL="http://localhost:${VLLM_PORT}/v1" \
 bfcl generate \
     --model "$BFCL_HF_MODEL" \
     --test-category "$TEST_CATEGORIES" \
     --skip-server-setup \
+    --allow-overwrite \
     --num-threads 4
 cd ..
 

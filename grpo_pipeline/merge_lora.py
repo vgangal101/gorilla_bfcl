@@ -8,11 +8,6 @@ Usage:
     python grpo_pipeline/merge_lora.py <hf_model_id> <adapter_path> <output_path>
 """
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "berkeley-function-call-leaderboard"))
-
 import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
