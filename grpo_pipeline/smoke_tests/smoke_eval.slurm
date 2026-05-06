@@ -106,6 +106,7 @@ python -m vllm.entrypoints.openai.api_server \
     --dtype bfloat16 \
     --max-model-len 2048 \
     --gpu-memory-utilization 0.85 \
+    --enforce-eager \
     > "$VLLM_LOG" 2>&1 &
 
 VLLM_PID=$!
