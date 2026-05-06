@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=bfcl_sft
-#SBATCH --partition=general
-#SBATCH --gres=gpu:h100:1
+#SBATCH --account=class_cse59818158spring2026
+#SBATCH --partition=public
+#SBATCH --qos=class
+#SBATCH --gres=gpu:a100:1
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -15,10 +17,6 @@
 #
 # Submit from repo root:
 #   sbatch grpo_pipeline/slurm/sft_train.slurm
-#
-# NOTE: If the general partition is full, fall back to public:
-#   #SBATCH --partition=public
-#   #SBATCH --gres=gpu:a100:1
 # -----------------------------------------------------------------------
 
 set -euo pipefail

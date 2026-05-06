@@ -79,8 +79,8 @@ pip install "transformers>=4.45" "trl>=0.12" "datasets>=2.20" "peft>=0.12" "acce
 
 | Option | Notes |
 |---|---|
-| **SOL `general` partition — H100 (recommended)** | Single H100-80G; ~3× faster than A100 for bf16 training. Use `sft_train.slurm` / `grpo_train.slurm`. |
-| **SOL `public` partition — A100** | 52 nodes available, reliable fallback. Change `--partition=general --gres=gpu:h100:1` to `--partition=public --gres=gpu:a100:1` in the slurm scripts. |
+| **SOL `public` partition — A100 (configured)** | Account `class_cse59818158spring2026`, QoS `class`. Scripts are pre-configured for this. |
+| **HuggingFace Jobs** | Single A100-80G on cloud; no queue wait; use `hf_job.py`. |
 | **HuggingFace Jobs** | Single A100-80G on cloud; no queue wait; use `hf_job.py`. |
 | **SOL Gaudi partition** | Not supported — TRL's GRPOTrainer uses CUDA-specific kernels. Gaudi is inference-only in this project. |
 
