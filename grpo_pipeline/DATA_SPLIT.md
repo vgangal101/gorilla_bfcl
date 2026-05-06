@@ -138,3 +138,43 @@ same pool:
 - **`slurm/run_pipeline.slurm`** — `TEST_CATEGORIES` uses live categories.
 - **`smoke_tests/check_data_overlap.py`** — run this any time categories
   change to re-verify the split is clean.
+
+---
+
+## Future Work — Stronger Split (not yet implemented)
+
+The academically strongest split would be to **not use BFCL data for training
+at all**, and train on a completely independent function-calling dataset.
+Evaluating on the full BFCL benchmark with zero training/eval dataset
+connection is the cleanest possible experimental setup.
+
+**Candidate training datasets:**
+
+| Dataset | Description | Why useful |
+|---|---|---|
+| **Gorilla APIBench** | 16,450 (instruction, API) pairs for HuggingFace, TorchHub, TensorFlow Hub | Original dataset from this repo's paper; same spirit as BFCL |
+| **ToolBench** | 126k real-world tool-use instructions across 16k APIs | Large, diverse, real APIs |
+| **ToolAlpaca** | 3.9k tool-use instances across 400 real APIs | Smaller, easier to work with |
+| **API-Bank** | 73 API tools, 314 dialogues | Multi-turn tool use |
+
+**What needs to be done:**
+
+1. Pick a dataset (ToolBench is the most comprehensive; APIBench is already
+   in this repo under `gorilla/`)
+2. Write a new `data_prep_external.py` that converts the chosen dataset into
+   the same `(prompt, completion, function, ground_truth)` format that
+   `sft_train.py` and `grpo_train.py` expect
+3. The reward function (`reward.py`) stays unchanged — it uses BFCL's
+   `ast_checker` which only runs during evaluation, not training
+4. Update `TRAIN_CATEGORIES` / dataset path in `data_prep_external.py`
+5. Evaluate on the full BFCL benchmark (`simple_*`, `parallel`, `multiple`,
+   `live_*`) — no exclusions needed since training data comes from elsewhere
+6. Re-run `check_data_overlap.py` adapted for the external dataset to confirm
+
+**Key challenge:** The external dataset's function schemas will use a different
+format than BFCL's. `data_prep.py`'s `ground_truth_to_string()` and
+`build_prompt()` assume BFCL's JSON structure. A new data prep script will
+need to normalise the external format into the same shape.
+
+**When implementing:** start with APIBench (already in `gorilla/` in this
+repo) since it requires no download and shares the same origin as BFCL.
