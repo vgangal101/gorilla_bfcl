@@ -17,13 +17,18 @@ FAIL=0
 check() {
     local label="$1"
     local cmd="$2"
+    local hint="${3:-}"
     printf "  %-50s" "$label"
     if eval "$cmd" > /tmp/smoke_out 2>&1; then
         echo "PASS"
         PASS=$((PASS + 1))
     else
         echo "FAIL"
-        cat /tmp/smoke_out
+        if [ -s /tmp/smoke_out ]; then
+            cat /tmp/smoke_out
+        elif [ -n "$hint" ]; then
+            echo "    → $hint"
+        fi
         FAIL=$((FAIL + 1))
     fi
 }
@@ -55,10 +60,18 @@ echo ""
 echo "[ BFCL data files exist ]"
 for cat in simple_python simple_java simple_javascript parallel_function multiple_function; do
     check "BFCL_v4_${cat}.json" \
-        "test -f berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_${cat}.json"
+        "test -f berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_${cat}.json" \
+        "file not found — run: ls bfcl_eval/data/BFCL_v4_*${cat}*"
     check "possible_answer/BFCL_v4_${cat}.json" \
-        "test -f berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_${cat}.json"
+        "test -f berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_${cat}.json" \
+        "file not found — run: ls bfcl_eval/data/possible_answer/BFCL_v4_*${cat}*"
 done
+echo ""
+
+echo "[ Available function categories ]"
+echo "  Files matching *function* in data dir:"
+ls berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_*function* 2>/dev/null \
+    | xargs -I{} basename {} || echo "  (none found)"
 echo ""
 
 echo "========================================"
