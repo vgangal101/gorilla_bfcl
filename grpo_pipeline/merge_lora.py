@@ -8,6 +8,8 @@ Usage:
     python grpo_pipeline/merge_lora.py <hf_model_id> <adapter_path> <output_path>
 """
 
+import sys
+
 import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
