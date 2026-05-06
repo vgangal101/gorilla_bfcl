@@ -66,7 +66,7 @@ def main():
     config = GRPOConfig(
         output_dir=OUTPUT_DIR,
         max_steps=2,                # 2 steps only
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=2,   # must be divisible by num_generations
         gradient_accumulation_steps=1,
         learning_rate=5e-6,
         num_generations=2,          # K=2 rollouts (minimum for group-relative)
