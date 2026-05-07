@@ -7,8 +7,8 @@
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:a100:4
 #SBATCH --mem=320G
-#SBATCH --cpus-per-task=64
-#SBATCH --time=120:00:00
+#SBATCH --cpus-per-task=32
+#SBATCH --time=04:00:00
 #SBATCH --output=grpo_pipeline/slurm/logs/%x_%j.out
 #SBATCH --error=grpo_pipeline/slurm/logs/%x_%j.err
 #
