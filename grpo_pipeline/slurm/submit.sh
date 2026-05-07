@@ -83,6 +83,9 @@ JOB_ID=$(sbatch \
     --parsable \
     grpo_pipeline/slurm/run_pipeline.slurm)
 
+# --parsable may return "jobid;clustername" — strip the cluster suffix
+JOB_ID="${JOB_ID%%;*}"
+
 echo "Submitted job $JOB_ID"
 echo ""
 echo "Monitor:"
