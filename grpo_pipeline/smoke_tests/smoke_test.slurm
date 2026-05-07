@@ -111,7 +111,7 @@ python -m vllm.entrypoints.openai.api_server \
     --served-model-name "$BFCL_HF_MODEL" \
     --port "$VLLM_PORT" \
     --dtype bfloat16 \
-    --max-model-len 2048 \
+    --max-model-len 8192 \
     --gpu-memory-utilization 0.85 \
     --enforce-eager \
     > "$VLLM_LOG" 2>&1 &
